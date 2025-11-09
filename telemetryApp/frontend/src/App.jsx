@@ -1,15 +1,20 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
-import './App.css'
-import BoatVelocityDisplay from './components/BoatVelocityDisplay'
+import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import './App.css';
+import Navbar from './components/Navbar';
+import Dashboard from './components/Dashboard';
+import HistoricData from './components/HistoricData';
 
 function App() {
   return (
-    <div className="App" style={{ textAlign: 'center', paddingTop: '50px' }}>
-      <h1>Autonomous Boat Telemetry Dashboard (POC)</h1>
-      <BoatVelocityDisplay />
-    </div>
+    <Router>
+      <div className="App">
+        <Navbar />
+        <Routes>
+          <Route path="/" element={<Dashboard />} />
+          <Route path="/historic" element={<HistoricData />} />
+        </Routes>
+      </div>
+    </Router>
   );
 }
 

@@ -26,7 +26,7 @@ def connect_mqtt():
 def publish(client):
     msg_count = 1
     while True:
-        time.sleep(1)
+        time.sleep(0.5)
         current_timestamp = datetime.now().isoformat()
         velocity_value = random.uniform(0, 30)
         msg = '{"timestamp": "%s", "velocity": %.2f}' % (current_timestamp, velocity_value)
@@ -40,7 +40,7 @@ def publish(client):
             print(f"Failed to send message to topic {topic}")
         
         msg_count += 1
-        if msg_count > 5:
+        if msg_count > 50:
             break
 
 
