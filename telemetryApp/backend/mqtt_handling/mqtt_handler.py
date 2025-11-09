@@ -6,6 +6,7 @@ from database.postgres import insert_velocity
 from fastapi_mqtt.config import MQTTConfig
 from fastapi_mqtt.fastmqtt import FastMQTT
 from utils.logger import get_logger
+from websocket.websocket_manager import manager
 
 logger = get_logger()
 
@@ -24,7 +25,8 @@ fast_mqtt = FastMQTT(config=MQTTConfig(
 async def velocity_message_handler(payload: VelocityPayload):
     logger.info(f"Handling velocity message: {payload}")
     await insert_velocity(payload)
-    logger.info("Velocity data inserted into the database.")
+    await manager.broadcast(payload)
+    logger.info("Velocity data inserted into the database and broadcast to WebSocket clients.")
 
 handlers = { 
     "/boat/velocity": velocity_message_handler,
