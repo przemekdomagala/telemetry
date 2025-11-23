@@ -1,0 +1,220 @@
+.dashboard-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 60px 20px;
+  min-height: 100vh;
+  color: #fff;
+}
+
+.dashboard-title {
+  font-size: 30px;
+  margin-bottom: 40px;
+  font-weight: bold;
+  text-align: center;
+}
+
+.dashboard-content {
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  align-items: flex-start;   /* ← this fixes the misalignment */
+  gap: 32px;
+  width: 100%;
+  max-width: 1300px;
+}
+
+
+.dashboard-card {
+  background-color: #1d1d1d;
+  padding: 30px;
+  border-radius: 16px;
+  box-shadow: 0 0 20px rgba(0,0,0,0.25);
+  flex: 1;
+  max-width: 550px;
+  min-width: 350px;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+/* subtle hover effect */
+.dashboard-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 8px 24px rgba(0,0,0,0.35);
+}
+
+/* Stream Receiver Styles */
+.container {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+}
+
+.container h4 {
+  margin-bottom: 16px;
+  font-size: 20px;
+  text-align: center;
+}
+
+.video-container {
+  width: 100%;
+  max-width: 100%;
+  border-radius: 8px;
+  overflow: hidden;
+  background-color: #0a0a0a;
+  position: relative;
+  aspect-ratio: 16 / 9;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+#rosImageDisplay {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  display: block;
+}
+
+.placeholder {
+  color: #888;
+  text-align: center;
+  padding: 20px;
+}
+
+.stats {
+  margin-top: 20px;
+  display: flex;
+  justify-content: center;
+  gap: 20px;
+}
+
+.stat {
+  text-align: center;
+}
+
+.stat-label {
+  font-size: 14px;
+  color: #888;
+  margin-bottom: 4px;
+}
+
+.stat-value {
+  font-size: 18px;
+  font-weight: bold;
+}
+
+/* Historic Data Page Styles */
+.historic-page-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 60px 20px;
+  min-height: 100vh;
+  color: #fff;
+}
+
+.page-title {
+  font-size: 30px;
+  margin-bottom: 40px;
+  font-weight: bold;
+  text-align: center;
+}
+
+.historic-card {
+  background-color: #1d1d1d;
+  padding: 30px;
+  border-radius: 16px;
+  box-shadow: 0 0 20px rgba(0,0,0,0.25);
+  width: 100%;
+  max-width: 900px;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.historic-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 8px 24px rgba(0,0,0,0.35);
+}
+
+.historic-title {
+  font-size: 24px;
+  margin-bottom: 24px;
+  text-align: center;
+  color: #fff;
+}
+
+.table-wrapper {
+  overflow-x: auto;
+  border-radius: 8px;
+  background-color: #121212;
+}
+
+.historic-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.95rem;
+}
+
+.historic-table thead {
+  background-color: #2a2a2a;
+}
+
+.historic-table th {
+  padding: 16px;
+  text-align: left;
+  font-weight: 600;
+  color: #fff;
+  border-bottom: 2px solid #3a3a3a;
+}
+
+.historic-table td {
+  padding: 14px 16px;
+  text-align: left;
+  color: #ddd;
+  border-bottom: 1px solid #2a2a2a;
+}
+
+.historic-table tbody tr {
+  transition: background-color 0.2s ease;
+}
+
+.historic-table tbody tr:hover {
+  background-color: #252525;
+}
+
+.velocity-value {
+  font-weight: 600;
+  color: #4CAF50;
+}
+
+.loading-message,
+.error-message,
+.empty-message {
+  text-align: center;
+  padding: 40px 20px;
+  font-size: 16px;
+}
+
+.loading-message {
+  color: #888;
+}
+
+.error-message {
+  color: #f44336;
+}
+
+.empty-message {
+  color: #888;
+}
+
+/* Responsive */
+@media (max-width: 900px) {
+  .dashboard-content {
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .dashboard-card {
+    max-width: 90%;
+    width: 100%;
+  }
+}

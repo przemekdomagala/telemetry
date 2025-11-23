@@ -34,36 +34,50 @@ function BoatVelocityHistoric() {
     }, []); 
 
     if (isLoading) {
-        return <p>Loading boat velocity historic data...</p>;
+        return (
+            <div className="historic-card">
+                <div className="loading-message">Loading boat velocity data...</div>
+            </div>
+        );
     }
 
     if (error) {
-        return <p>Error loading data: **{error}**</p>;
+        return (
+            <div className="historic-card">
+                <div className="error-message">Error loading data: {error}</div>
+            </div>
+        );
     }
 
     if (historicData.length === 0) {
-        return <p>No historic velocity data found.</p>;
+        return (
+            <div className="historic-card">
+                <div className="empty-message">No historic velocity data found.</div>
+            </div>
+        );
     }
 
     return (
-        <div>
-            <h2>⛵ Boat Velocity Historic Data</h2>
-            <table>
-                <thead>
-                    <tr>
-                        <th>Timestamp</th>
-                        <th>Velocity (knots)</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {historicData.map((entry, index) => (
-                        <tr key={index}>
-                            <td>{new Date(entry.timestamp).toLocaleString()}</td>
-                            <td>**{entry.velocity}**</td>
+        <div className="historic-card">
+            <h2 className="historic-title">Boat Velocity Data</h2>
+            <div className="table-wrapper">
+                <table className="historic-table">
+                    <thead>
+                        <tr>
+                            <th>Timestamp</th>
+                            <th>Velocity</th>
                         </tr>
-                    ))}
-                </tbody>
-            </table>
+                    </thead>
+                    <tbody>
+                        {historicData.map((entry, index) => (
+                            <tr key={index}>
+                                <td>{new Date(entry.timestamp).toLocaleString()}</td>
+                                <td className="velocity-value">{entry.velocity} m/s</td>
+                            </tr>
+                        ))}
+                    </tbody>
+                </table>
+            </div>
         </div>
     );
 }

@@ -113,14 +113,14 @@ function BoatVelocityDisplay() {
   const lastUpdatedTime = timestamp ? new Date(timestamp).toLocaleTimeString() : 'N/A';
   
   return (
-    <div style={{ padding: '20px', border: '2px solid #007bff', borderRadius: '8px' }}>
+    <div >
       <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-        <h2>🚤 Live Boat Velocity</h2>
+        <h2>Live Boat Velocity</h2>
         {connectionStatus}
       </div>
       <p style={{ fontSize: '36px', fontWeight: 'bold', margin: '10px 0' }}>
         {velocity !== null ? velocity.toFixed(1) : '---'} 
-        <span style={{ fontSize: '18px', fontWeight: 'normal' }}>knots (kt)</span>
+        <span style={{ fontSize: '18px', fontWeight: 'normal' }}>m/s</span>
       </p>
       <p>Last updated: {lastUpdatedTime}</p>
     </div>
