@@ -6,7 +6,6 @@ const useWebSocket = ({ onOffer, onIceCandidate, onPeerDisconnected, setStatus }
   const reconnectTimeoutRef = useRef(null);
   const handlersRef = useRef({ onOffer, onIceCandidate, onPeerDisconnected, setStatus });
 
-  // Keep handlers ref up to date
   useEffect(() => {
     handlersRef.current = { onOffer, onIceCandidate, onPeerDisconnected, setStatus };
   }, [onOffer, onIceCandidate, onPeerDisconnected, setStatus]);
@@ -38,7 +37,6 @@ const useWebSocket = ({ onOffer, onIceCandidate, onPeerDisconnected, setStatus }
   }, []);
 
   const connect = useCallback(() => {
-    // Use environment variable or default to backend port
     const backendHost = import.meta.env.VITE_BACKEND_URL || 'localhost:8000';
     const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
     const wsUrl = `${protocol}//${backendHost}/ws/signaling`;

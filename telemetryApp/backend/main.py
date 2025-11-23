@@ -1,6 +1,3 @@
-import logging
-import os
-import json
 from contextlib import asynccontextmanager
 from database.postgres import init_postgres, close_postgres
 from fastapi import FastAPI, WebSocket, WebSocketDisconnect
@@ -13,7 +10,6 @@ from webrtc_signaling.client import Client
 from typing import Dict
 from webrtc_signaling.signaling_utils import handle_signaling, send_message
 
-# logging
 logger = get_logger()
 
 clients: Dict[str, Client] = {}
@@ -28,7 +24,6 @@ async def _lifespan(_app: FastAPI):
 
 app = FastAPI(lifespan=_lifespan)
 
-# Configure CORS
 app.add_middleware(
     CORSMiddleware,
     allow_origins=[
@@ -58,7 +53,7 @@ async def websocket_endpoint(websocket: WebSocket):
     await manager.connect(websocket)
     try:
         while True:
-            await websocket.receive_text()  # Keep connection alive
+            await websocket.receive_text()  
     except WebSocketDisconnect:
         manager.disconnect(websocket)
 
@@ -82,11 +77,9 @@ async def signaling_server_websocket_endpoint(websocket: WebSocket):
     except Exception as e:
         print(f"Error in WebSocket connection for client {client.id}: {e}")
     finally:
-        # Notify paired peer of disconnection
         if client.peer_id and client.peer_id in clients:
             peer = clients[client.peer_id]
             await send_message(peer, "peer-disconnected", {})
             peer.peer_id = None
 
-        # Remove client from the registry
         del clients[client.id]

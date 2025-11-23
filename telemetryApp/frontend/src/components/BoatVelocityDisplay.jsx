@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 
 const API_URL = 'http://localhost:8000/api/velocity';
 const WS_URL = 'ws://localhost:8000/ws/velocity';
@@ -46,7 +46,6 @@ function BoatVelocityDisplay() {
     const [lastSuccessfulData, setLastSuccessfulData] = useState(null);
   const [wsConnected, setWsConnected] = useState(false);
 
-  // WebSocket connection handler
   const connectWebSocket = useCallback(() => {
     const ws = new WebSocket(WS_URL);
 
@@ -87,10 +86,8 @@ function BoatVelocityDisplay() {
   useEffect(() => {
     fetchData();
     
-    // Set up WebSocket connection
     const ws = connectWebSocket();
     
-    // Cleanup on unmount
     return () => {
       if (ws) {
         ws.close();

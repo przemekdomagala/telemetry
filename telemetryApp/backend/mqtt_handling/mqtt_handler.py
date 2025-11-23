@@ -10,7 +10,6 @@ from websocket.websocket_manager import manager
 
 logger = get_logger()
 
-# Get MQTT configuration from environment variables
 mqtt_host = os.getenv("MQTT_HOST", "mqtt")
 mqtt_port = int(os.getenv("MQTT_PORT", "1883"))
 

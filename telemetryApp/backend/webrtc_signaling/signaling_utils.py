@@ -43,7 +43,6 @@ async def handle_identify_event(client: Client, event: str, data: dict, clients:
         client.peer_id = found_peer.id
         found_peer.peer_id = client.id
 
-        # Notify both clients of the pairing
         await send_message(client, "paired", {
             "peerId": found_peer.id,
             "role": client.type
@@ -61,44 +60,11 @@ async def handle_signaling(websocket: WebSocket, client: Client, clients: Dict[s
     payload = message.get("data", {})
 
     if event == "identify":
-        # Client identifies as 'sender' or 'receiver'
         client.type = payload.get("type")
 
         await handle_identify_event(client, event, payload, clients)
 
     elif event in ["offer", "answer", "ice-candidate"]:
-        # Relay signaling messages to the peer
         if client.peer_id and client.peer_id in clients:
             peer = clients[client.peer_id]
             await send_message(peer, event, payload)
-
-    
-
-
-# async def signaling_server_websocket_endpoint(websocket: WebSocket):
-#     """
-#     Endpoint for WebRTC signaling
-#     """
-
-#     await websocket.accept()
-
-#     client = Client(websocket)
-#     clients[client.id] = client
-
-#     try:
-#         while True:
-#             await handle_signaling(websocket, client)
-
-#     except WebSocketDisconnect:
-#         print(f"Client {client.id} disconnected")
-#     except Exception as e:
-#         print(f"Error in WebSocket connection for client {client.id}: {e}")
-#     finally:
-#         # Notify paired peer of disconnection
-#         if client.peer_id and client.peer_id in clients:
-#             peer = clients[client.peer_id]
-#             await send_message(peer, "peer-disconnected", {})
-#             peer.peer_id = None
-
-#         # Remove client from the registry
-#         del clients[client.id]

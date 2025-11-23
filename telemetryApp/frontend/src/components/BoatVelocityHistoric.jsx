@@ -16,7 +16,7 @@ function BoatVelocityHistoric() {
                 }
                 const data = await response.json();
                 setHistoricData(data);
-                setError(null); // Clear any previous errors
+                setError(null); 
             } catch (err) {
                 console.error("Fetch error:", err);
                 setError(err.message);

@@ -27,9 +27,5 @@ class WebSocketManager:
                 logger.error(f"Error sending message to WebSocket: {e}")
                 disconnected.add(connection)
         
-        # Clean up disconnected clients
         for connection in disconnected:
             self.disconnect(connection)
-
-# Create a global instance
-manager = WebSocketManager()

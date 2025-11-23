@@ -14,6 +14,6 @@ async def get_velocity(db: Pool = Depends(get_postgres)):
         rows = await conn.fetch(query)
         
     if not rows:
-        raise HTTPException(status_code=404, detail="No velocity data found")
+        rows = [] 
     
     return [VelocityPayload(timestamp=row['timestamp'], velocity=row['velocity']) for row in rows]

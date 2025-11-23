@@ -3,6 +3,7 @@ const rclnodejs = require('rclnodejs');
 const { createCanvas, ImageData } = require('canvas');
 const wrtc = require('wrtc');
 
+//ROS 2 WebRTC Client that connects to a ZED camera image topic and streams images via WebRTC.
 class ROS2WebRTCClient {
     constructor() {
         this.rosNode = null;
@@ -23,6 +24,7 @@ class ROS2WebRTCClient {
         this.initializeROS2();
     }
     
+    // Initialize ROS 2 connection
     async initializeROS2() {
         try {
             console.log('Initializing ROS 2 connection...');
@@ -45,10 +47,9 @@ class ROS2WebRTCClient {
             
             console.log('ROS 2 connection established');
             
-            // Auto-start WebRTC stream
             if (this.autoStartStreaming) {
                 console.log('Auto-starting WebRTC stream...');
-                setTimeout(() => this.startWebRTCStream(), 2000); // Wait 2s for stability
+                setTimeout(() => this.startWebRTCStream(), 1000); 
             }
             
         } catch (error) {
@@ -58,15 +59,13 @@ class ROS2WebRTCClient {
         }
     }
     
+    // Handle incoming ROS image messages
     handleROSImage(imageMsg) {
         try {
-            // Update last image timestamp
             this.lastImageTime = Date.now();
             
-            // Convert ROS Image message to base64
             const { width, height, data, encoding } = imageMsg;
             
-            // Reuse canvas if dimensions match, otherwise create new one
             if (!this.canvas || this.canvas.width !== width || this.canvas.height !== height) {
                 this.canvas = createCanvas(width, height);
                 this.ctx = this.canvas.getContext('2d');
@@ -74,14 +73,10 @@ class ROS2WebRTCClient {
             const canvas = this.canvas;
             const ctx = this.ctx;
             
-            // Convert image data based on encoding - direct canvas manipulation
-            
             this.drawBGRA8ToCanvas(ctx, data, width, height);
-            
-            // Convert to base64 JPEG
+    
             const base64Image = canvas.toDataURL('image/jpeg', 0.8);
             
-            // Store current image
             this.currentImageData = {
                 base64: base64Image,
                 width: width,
@@ -94,6 +89,7 @@ class ROS2WebRTCClient {
         }
     }
     
+    // Convert BGRA8 data to Canvas ImageData and draw
     drawBGRA8ToCanvas(ctx, data, width, height) {
         const imageData = ctx.createImageData(width, height);
         for (let i = 0; i < data.length; i += 4) {
@@ -106,20 +102,18 @@ class ROS2WebRTCClient {
         ctx.putImageData(imageData, 0, 0);
     }
     
+    // Start WebRTC streaming
     startWebRTCStream() {
         if (this.isStreamingActive) return;
         
         console.log('Starting WebRTC stream with ROS 2 images...');
         
-        // Use environment variable for signaling server, defaults to localhost
         let SIGNALING_SERVER = process.env.SIGNALING_SERVER || 'ws://localhost:8000/ws/signaling';
         
-        // Ensure URL has proper protocol
         if (!SIGNALING_SERVER.startsWith('ws://') && !SIGNALING_SERVER.startsWith('wss://')) {
             SIGNALING_SERVER = 'ws://' + SIGNALING_SERVER;
         }
         
-        // Ensure URL has /ws/signaling path
         if (!SIGNALING_SERVER.endsWith('/ws/signaling')) {
             SIGNALING_SERVER = SIGNALING_SERVER + '/ws/signaling';
         }
@@ -144,14 +138,13 @@ class ROS2WebRTCClient {
         this.signalingSocket.on('close', () => {
             console.log('Disconnected from signaling server');
             this.stopWebRTCStream();
-            
-            // Attempt to reconnect after 3 seconds
+                
             setTimeout(() => {
                 if (!this.isStreamingActive && this.isRosConnected) {
                     console.log('Attempting to reconnect...');
                     this.startWebRTCStream();
                 }
-            }, 3000);
+            }, 1000);
         });
         
         this.signalingSocket.on('error', (error) => {
@@ -159,12 +152,14 @@ class ROS2WebRTCClient {
         });
     }
     
+    // Send message via signaling WebSocket
     sendMessage(event, data) {
         if (this.signalingSocket && this.signalingSocket.readyState === WebSocket.OPEN) {
             this.signalingSocket.send(JSON.stringify({ event, data }));
         }
     }
     
+    // Handle signaling messages from WebSocket
     async handleSignalingMessage(message) {
         const { event, data } = message;
         
@@ -189,7 +184,6 @@ class ROS2WebRTCClient {
             case 'ice-candidate':
                 try {
                     if (this.peerConnection && data.candidate) {
-                        // Validate candidate before adding
                         if (data.candidate.candidate && data.candidate.candidate.trim() !== '') {
                             await this.peerConnection.addIceCandidate(
                                 new wrtc.RTCIceCandidate(data.candidate)
@@ -208,6 +202,7 @@ class ROS2WebRTCClient {
         }
     }
     
+    // Setup WebRTC connection and data channel
     async setupWebRTCConnection() {
         try {
             this.peerConnection = new wrtc.RTCPeerConnection({
@@ -217,10 +212,9 @@ class ROS2WebRTCClient {
                 ]
             });
             
-            // Create data channel for image streaming
             this.dataChannel = this.peerConnection.createDataChannel('images', {
-                ordered: false, // Allow out-of-order delivery for lower latency
-                maxRetransmits: 0 // Don't retransmit - drop old frames
+                ordered: false, 
+                maxRetransmits: 0 
             });
             
             this.dataChannel.onopen = () => {
@@ -240,10 +234,9 @@ class ROS2WebRTCClient {
             };
             
             this.dataChannel.onbufferedamountlow = () => {
-                // Resume sending if we were throttled
+                
             };
             
-            // Handle ICE candidates
             this.peerConnection.onicecandidate = (event) => {
                 if (event.candidate) {
                     this.sendMessage('ice-candidate', {
@@ -261,7 +254,6 @@ class ROS2WebRTCClient {
                 }
             };
             
-            // Create and send offer
             const offer = await this.peerConnection.createOffer();
             await this.peerConnection.setLocalDescription(offer);
             
@@ -273,9 +265,9 @@ class ROS2WebRTCClient {
         }
     }
     
+    // Monitor for image timeouts to stop stream if no images received
     startImageTimeoutMonitor() {
-        // Monitor if images stop coming from ROS
-        const IMAGE_TIMEOUT = 30000; // 30 seconds without images = stop streaming
+        const IMAGE_TIMEOUT = 30000; 
         
         if (this.imageTimeoutChecker) {
             clearInterval(this.imageTimeoutChecker);
@@ -289,16 +281,16 @@ class ROS2WebRTCClient {
                     this.stopWebRTCStream();
                 }
             }
-        }, 5000); // Check every 5 seconds
+        }, 5000); 
     }
     
+    // Continuously send images over data channel
     startImageStreaming() {
         this.imageStreamInterval = setInterval(() => {
             if (this.currentImageData && this.dataChannel && 
                 this.dataChannel.readyState === 'open' && this.isStreamingActive) {
                 
-                // Check buffered amount to avoid overwhelming the channel
-                const maxBufferedAmount = 16 * 1024 * 1024; // 16MB
+                const maxBufferedAmount = 16 * 1024 * 1024; 
                 if (this.dataChannel.bufferedAmount < maxBufferedAmount) {
                     try {
                         const message = JSON.stringify(this.currentImageData);
@@ -308,14 +300,15 @@ class ROS2WebRTCClient {
                     }
                 }
             }
-        }, 33); // ~30fps
+        }, 33); 
         
         console.log('Started continuous image streaming via WebRTC data channel');
     }
     
+    // Stop WebRTC streaming and clean up resources
     stopWebRTCStream() {
         if (!this.isStreamingActive && !this.peerConnection && !this.signalingSocket) {
-            return; // Already stopped
+            return; 
         }
         
         console.log('Stopping WebRTC stream...');
@@ -335,24 +328,24 @@ class ROS2WebRTCClient {
         if (this.dataChannel) {
             try {
                 this.dataChannel.close();
-            } catch (e) { /* ignore */ }
+            } catch (e) { /* */ }
             this.dataChannel = null;
         }
         
         if (this.peerConnection) {
             try {
-                // Remove event handlers to prevent race conditions
+                
                 this.peerConnection.onconnectionstatechange = null;
                 this.peerConnection.onicecandidate = null;
                 this.peerConnection.close();
-            } catch (e) { /* ignore */ }
+            } catch (e) { /* */ }
             this.peerConnection = null;
         }
         
         if (this.signalingSocket) {
             try {
                 this.signalingSocket.close();
-            } catch (e) { /* ignore */ }
+            } catch (e) { /* */ }
             this.signalingSocket = null;
         }
     }

@@ -18,7 +18,7 @@
   display: flex;
   flex-direction: row;
   justify-content: center;
-  align-items: flex-start;   /* ← this fixes the misalignment */
+  align-items: flex-start;   
   gap: 32px;
   width: 100%;
   max-width: 1300px;
@@ -36,13 +36,11 @@
   transition: transform 0.2s ease, box-shadow 0.2s ease;
 }
 
-/* subtle hover effect */
 .dashboard-card:hover {
   transform: translateY(-4px);
   box-shadow: 0 8px 24px rgba(0,0,0,0.35);
 }
 
-/* Stream Receiver Styles */
 .container {
   display: flex;
   flex-direction: column;
@@ -103,7 +101,6 @@
   font-weight: bold;
 }
 
-/* Historic Data Page Styles */
 .historic-page-container {
   display: flex;
   flex-direction: column;
@@ -206,7 +203,6 @@
   color: #888;
 }
 
-/* Responsive */
 @media (max-width: 900px) {
   .dashboard-content {
     flex-direction: column;

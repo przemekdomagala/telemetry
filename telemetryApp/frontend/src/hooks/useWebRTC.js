@@ -58,7 +58,6 @@ const useWebRTC = ({ remoteVideoRef, rosImageRef, placeholderRef }) => {
       
       peerConnectionRef.current = pc;
 
-      // Handle data channel
       pc.ondatachannel = (event) => {
         const channel = event.channel;
         dataChannelRef.current = channel;
@@ -132,7 +131,6 @@ const useWebRTC = ({ remoteVideoRef, rosImageRef, placeholderRef }) => {
     setStatus
   });
 
-  // Store sendMessage in ref so handleOffer can access it
   useEffect(() => {
     sendMessageRef.current = sendMessage;
   }, [sendMessage]);
