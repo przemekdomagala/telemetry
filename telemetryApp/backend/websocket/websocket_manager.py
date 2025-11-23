@@ -29,3 +29,5 @@ class WebSocketManager:
         
         for connection in disconnected:
             self.disconnect(connection)
+
+manager = WebSocketManager()

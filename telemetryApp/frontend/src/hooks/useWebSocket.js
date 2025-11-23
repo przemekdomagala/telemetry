@@ -5,10 +5,18 @@ const useWebSocket = ({ onOffer, onIceCandidate, onPeerDisconnected, setStatus }
   const wsRef = useRef(null);
   const reconnectTimeoutRef = useRef(null);
   const handlersRef = useRef({ onOffer, onIceCandidate, onPeerDisconnected, setStatus });
+  const isMountedRef = useRef(true);
 
   useEffect(() => {
     handlersRef.current = { onOffer, onIceCandidate, onPeerDisconnected, setStatus };
   }, [onOffer, onIceCandidate, onPeerDisconnected, setStatus]);
+
+  useEffect(() => {
+    isMountedRef.current = true;
+    return () => {
+      isMountedRef.current = false;
+    };
+  }, []);
 
   const sendMessage = useCallback((event, data) => {
     if (wsRef.current?.readyState === WebSocket.OPEN) {
@@ -37,6 +45,11 @@ const useWebSocket = ({ onOffer, onIceCandidate, onPeerDisconnected, setStatus }
   }, []);
 
   const connect = useCallback(() => {
+    if (wsRef.current) {
+      wsRef.current.onclose = null;
+      wsRef.current.close();
+    }
+
     const backendHost = import.meta.env.VITE_BACKEND_URL || 'localhost:8000';
     const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
     const wsUrl = `${protocol}//${backendHost}/ws/signaling`;
@@ -45,25 +58,31 @@ const useWebSocket = ({ onOffer, onIceCandidate, onPeerDisconnected, setStatus }
     wsRef.current = ws;
 
     ws.onopen = () => {
+      if (!isMountedRef.current) return;
       setIsConnected(true);
       handlersRef.current.setStatus({ message: 'Connected - Ready to receive streams', type: 'success' });
       sendMessage('identify', { type: 'receiver' });
     };
 
     ws.onclose = () => {
+      if (!isMountedRef.current) return;
       setIsConnected(false);
       handlersRef.current.setStatus({ message: 'Disconnected from signaling server', type: 'error' });
       
       reconnectTimeoutRef.current = setTimeout(() => {
-        connect();
+        if (isMountedRef.current) {
+          connect();
+        }
       }, 3000);
     };
 
     ws.onerror = () => {
+      if (!isMountedRef.current) return;
       handlersRef.current.setStatus({ message: 'Connection error', type: 'error' });
     };
 
     ws.onmessage = (event) => {
+      if (!isMountedRef.current) return;
       try {
         const message = JSON.parse(event.data);
         handleMessage(message);
@@ -81,6 +100,7 @@ const useWebSocket = ({ onOffer, onIceCandidate, onPeerDisconnected, setStatus }
         clearTimeout(reconnectTimeoutRef.current);
       }
       if (wsRef.current) {
+        wsRef.current.onclose = null;
         wsRef.current.close();
       }
     };
