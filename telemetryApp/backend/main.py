@@ -3,8 +3,8 @@ from database.postgres import init_postgres, close_postgres
 from fastapi import FastAPI, WebSocket, WebSocketDisconnect
 from fastapi.middleware.cors import CORSMiddleware
 from routes.velocity_routes import velocity_router
-from mqtt_handling.mqtt_handler import fast_mqtt, wait_for_mqtt_connection
-from websocket.websocket_manager import manager
+from mqtt.mqtt_handler import fast_mqtt, wait_for_mqtt_connection
+from websocket_manager.websocket_manager import manager
 from utils.logger import get_logger
 from webrtc_signaling.client import Client
 from typing import Dict
@@ -73,9 +73,9 @@ async def signaling_server_websocket_endpoint(websocket: WebSocket):
             await handle_signaling(websocket, client, clients)
 
     except WebSocketDisconnect:
-        print(f"Client {client.id} disconnected")
+        logger.info(f"Client {client.id} disconnected")
     except Exception as e:
-        print(f"Error in WebSocket connection for client {client.id}: {e}")
+        logger.error(f"Error in WebSocket connection for client {client.id}: {e}")
     finally:
         if client.peer_id and client.peer_id in clients:
             peer = clients[client.peer_id]

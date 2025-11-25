@@ -68,6 +68,7 @@ async def close_postgres() -> None:
         logger.warning("PostgreSQL connection pool was not initialized.")
 
 
+# region create
 async def create_velocity_table():
         async with conn_pool.acquire() as conn:
             await conn.execute("""
@@ -93,7 +94,9 @@ async def create_velocity_table():
                 logger.error(f"Error creating hypertable: {e}")
                 raise
 
+# endregion
 
+# region insert
 async def insert_velocity(payload):
     try:
         pool = await get_postgres()

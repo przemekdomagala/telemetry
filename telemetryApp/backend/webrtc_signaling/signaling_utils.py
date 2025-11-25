@@ -2,6 +2,9 @@ import json
 from typing import Dict, Optional
 from webrtc_signaling.client import Client
 from fastapi import WebSocket, WebSocketDisconnect
+from utils.logger import get_logger
+
+logger = get_logger()
 
 
 async def find_unpaired_client(client_type: str, exclude_id: str, clients: Dict[str, Client]) -> Optional[Client]:
@@ -29,7 +32,7 @@ async def send_message(client: Client, event: str, data: dict):
         }
         await client.websocket.send_text(json.dumps(message))
     except Exception as e:
-        print(f"Error sending message to client {client.id}: {e}")
+        logger.error(f"Error sending message to client {client.id}: {e}")
 
 
 async def handle_identify_event(client: Client, event: str, data: dict, clients: Dict[str, Client]):

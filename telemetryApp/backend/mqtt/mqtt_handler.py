@@ -1,12 +1,10 @@
 import asyncio
 import os
 import json
-from models.velocity_model import VelocityPayload
-from database.postgres import insert_velocity
 from fastapi_mqtt.config import MQTTConfig
 from fastapi_mqtt.fastmqtt import FastMQTT
 from utils.logger import get_logger
-from websocket.websocket_manager import manager
+from mqtt.message_handlers import handlers
 
 logger = get_logger()
 
@@ -20,16 +18,6 @@ fast_mqtt = FastMQTT(config=MQTTConfig(
     port=mqtt_port,
     keepalive=60
 ))
-
-async def velocity_message_handler(payload: VelocityPayload):
-    logger.info(f"Handling velocity message: {payload}")
-    await insert_velocity(payload)
-    await manager.broadcast(payload)
-    logger.info("Velocity data inserted into the database and broadcast to WebSocket clients.")
-
-handlers = { 
-    "/boat/velocity": velocity_message_handler,
-}
 
 async def wait_for_mqtt_connection():
     """Wait for MQTT broker to be ready"""
