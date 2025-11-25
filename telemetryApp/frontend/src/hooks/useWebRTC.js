@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
-import useWebSocket from './useWebSocket';
+import useSignalingWebSocket from './useSignalingWebSocket';
 
 const useWebRTC = ({ remoteVideoRef, rosImageRef, placeholderRef }) => {
   const [status, setStatus] = useState({ message: 'Connecting...', type: 'waiting' });
@@ -113,7 +113,7 @@ const useWebRTC = ({ remoteVideoRef, rosImageRef, placeholderRef }) => {
     }
   }, [handleWebRTCImage, stopReceiving]);
 
-  const { sendMessage, isConnected } = useWebSocket({
+  const { sendMessage, isConnected } = useSignalingWebSocket({
     onOffer: handleOffer,
     onIceCandidate: async (data) => {
       if (peerConnectionRef.current && data.candidate) {

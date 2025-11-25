@@ -1,37 +1,11 @@
-import React, { useState, useEffect } from 'react';
+import React from 'react';
+import useApi from '../../hooks/useApi';
 
 const API_URL = 'http://localhost:8000/api/velocity';
 
 function BoatVelocityHistoric() {
-    const [historicData, setHistoricData] = useState([]);
-    const [isLoading, setIsLoading] = useState(true);
-    const [error, setError] = useState(null);
-
-    useEffect(() => {
-        const fetchData = async () => {
-            try {
-                const response = await fetch(API_URL);
-                if (!response.ok) {
-                    throw new Error(`HTTP error! status: ${response.status}`);
-                }
-                const data = await response.json();
-                setHistoricData(data);
-                setError(null); 
-            } catch (err) {
-                console.error("Fetch error:", err);
-                setError(err.message);
-            } finally {
-                setIsLoading(false);
-            }
-        };
-
-        
-        fetchData();
-
-        const intervalId = setInterval(fetchData, 1000);
-
-        return () => clearInterval(intervalId);
-    }, []); 
+    
+    const { data: historicData, isLoading, error } = useApi(API_URL);
 
     if (isLoading) {
         return (
@@ -49,7 +23,7 @@ function BoatVelocityHistoric() {
         );
     }
 
-    if (historicData.length === 0) {
+    if (!historicData || historicData.length === 0) {
         return (
             <div className="historic-card">
                 <div className="empty-message">No historic velocity data found.</div>

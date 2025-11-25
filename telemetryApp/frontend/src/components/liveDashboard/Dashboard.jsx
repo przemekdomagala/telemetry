@@ -1,6 +1,6 @@
 import BoatVelocityDisplay from './BoatVelocityDisplay';
 import WebRTCReceiver from './WebRTCReceiver';
-import '../css/Dashboard.css';
+import '../../css/Dashboard.css';
 
 function Dashboard() {
   return (

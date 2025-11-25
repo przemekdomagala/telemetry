@@ -1,5 +1,5 @@
 import { useRef } from 'react';
-import useWebRTC from '../hooks/useWebRTC';
+import useWebRTC from '../../hooks/useWebRTC';
 
 const WebRTCReceiver = () => {
     const rosImageRef = useRef(null);
