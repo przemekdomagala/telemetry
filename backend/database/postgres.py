@@ -6,7 +6,7 @@ from utils.logger import get_logger
 
 logger = get_logger()
 
-DATABASE_URL = "postgresql://telemetry_user:telemetry_password@db:5432/telemetry_db"
+DATABASE_URL = os.getenv("DATABASE_URL")
 
 conn_pool: Optional[asyncpg.Pool] = None
 
