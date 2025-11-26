@@ -1,18 +1,4 @@
 services:
-  mqtt:
-    image: eclipse-mosquitto:2.0
-    ports:
-      - "1883:1883"
-      - "9001:9001"
-    volumes:
-      - ./mosquitto.conf:/mosquitto/config/mosquitto.conf
-    restart: unless-stopped
-    healthcheck:
-      test: ["CMD-SHELL", "mosquitto_pub -h localhost -t test -m 'health check' || exit 1"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
-
   db:
     image: timescale/timescaledb:latest-pg16
     restart: always
@@ -35,12 +21,13 @@ services:
     depends_on:
       db:
         condition: service_healthy
-      mqtt:
-        condition: service_healthy
     environment:
       DATABASE_URL: postgresql+psycopg2://telemetry_user:telemetry_password@db:5432/telemetry_db
-      MQTT_HOST: mqtt 
-      MQTT_PORT: 1883
+      MQTT_HOST: ${MQTT_HOST:-broker.hivemq.com}
+      MQTT_PORT: ${MQTT_PORT:-8883}
+      MQTT_USERNAME: ${MQTT_USERNAME}
+      MQTT_PASSWORD: ${MQTT_PASSWORD}
+      MQTT_USE_TLS: ${MQTT_USE_TLS:-true}
     ports:
       - "8000:8000"
     command: uvicorn main:app --host 0.0.0.0 --reload

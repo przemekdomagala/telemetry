@@ -8,16 +8,24 @@ from mqtt.message_handlers import handlers
 
 logger = get_logger()
 
-mqtt_host = os.getenv("MQTT_HOST", "mqtt")
-mqtt_port = int(os.getenv("MQTT_PORT", "1883"))
+mqtt_host = os.getenv("MQTT_HOST", "broker.hivemq.com")
+mqtt_port = int(os.getenv("MQTT_PORT", "8883"))
+mqtt_username = os.getenv("MQTT_USERNAME", "")
+mqtt_password = os.getenv("MQTT_PASSWORD", "")
+mqtt_use_tls = os.getenv("MQTT_USE_TLS", "true").lower() == "true"
 
-logger.info(f"Configuring MQTT connection to {mqtt_host}:{mqtt_port}")
+logger.info(f"Configuring MQTT connection to {mqtt_host}:{mqtt_port} (TLS: {mqtt_use_tls})")
 
-fast_mqtt = FastMQTT(config=MQTTConfig(
+mqtt_config = MQTTConfig(
     host=mqtt_host,
     port=mqtt_port,
-    keepalive=60
-))
+    keepalive=60,
+    username=mqtt_username if mqtt_username else None,
+    password=mqtt_password if mqtt_password else None,
+    ssl=mqtt_use_tls
+)
+
+fast_mqtt = FastMQTT(config=mqtt_config)
 
 async def wait_for_mqtt_connection():
     """Wait for MQTT broker to be ready"""

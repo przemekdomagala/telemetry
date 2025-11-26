@@ -2,3 +2,4 @@ __pycache__/
 .venv/
 .devcontainer
 node_modules/
+.env
