@@ -50,9 +50,8 @@ const useWebSocket = ({ onOffer, onIceCandidate, onPeerDisconnected, setStatus }
       wsRef.current.close();
     }
 
-    const backendHost = import.meta.env.VITE_BACKEND_URL || 'localhost:8000';
-    const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
-    const wsUrl = `${protocol}//${backendHost}/ws/signaling`;
+    const wsBaseUrl = import.meta.env.VITE_WS_URL;
+    const wsUrl = `${wsBaseUrl}/signaling`;
     
     const ws = new WebSocket(wsUrl);
     wsRef.current = ws;

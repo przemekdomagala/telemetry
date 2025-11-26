@@ -1,3 +1,4 @@
+import os
 from contextlib import asynccontextmanager
 from database.postgres import init_postgres, close_postgres
 from fastapi import FastAPI, WebSocket, WebSocketDisconnect
@@ -27,8 +28,8 @@ app = FastAPI(lifespan=_lifespan)
 app.add_middleware(
     CORSMiddleware,
     allow_origins=[
-        "http://localhost:5173",
-        "http://127.0.0.1:5173"
+        os.getenv("FRONTEND_URL"),
+        os.getenv("FRONTEND_LOCAL_URL"),
     ],
     allow_credentials=True,
     allow_methods=["*"],

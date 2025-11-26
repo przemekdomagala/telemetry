@@ -2,8 +2,8 @@ import { useState, useEffect, useCallback } from 'react';
 import useWebSocket from '../../hooks/useWebSocket';
 import useApi from '../../hooks/useApi';
 
-const API_URL = 'http://localhost:8000/api/velocity';
-const WS_URL = 'ws://localhost:8000/ws/velocity';
+const API_URL = `${import.meta.env.VITE_API_URL}/velocity`;
+const WS_URL = `${import.meta.env.VITE_WS_URL}/velocity`;
 
 function BoatVelocityDisplay() {
   const [velocity, setVelocity] = useState(null);
