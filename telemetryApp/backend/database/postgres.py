@@ -68,10 +68,9 @@ async def close_postgres() -> None:
         logger.warning("PostgreSQL connection pool was not initialized.")
 
 
+# region create
 async def create_velocity_table():
-    # Create the velocity hypertable if it doesn't exist
         async with conn_pool.acquire() as conn:
-            # First create a regular table
             await conn.execute("""
                 CREATE TABLE IF NOT EXISTS velocity (
                     id SERIAL,
@@ -82,7 +81,6 @@ async def create_velocity_table():
                 )
             """)
             
-            # Convert it to a hypertable
             try:
                 await conn.execute("""
                     SELECT create_hypertable('velocity', 'timestamp', 
@@ -96,12 +94,13 @@ async def create_velocity_table():
                 logger.error(f"Error creating hypertable: {e}")
                 raise
 
+# endregion
 
+# region insert
 async def insert_velocity(payload):
     try:
         pool = await get_postgres()
         async with pool.acquire() as conn:
-            # Convert ISO timestamp string to datetime object
             timestamp = datetime.fromisoformat(payload['timestamp'])
             await conn.execute("""
                 INSERT INTO velocity (timestamp, velocity)

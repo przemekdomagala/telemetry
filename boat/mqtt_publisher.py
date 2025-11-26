@@ -7,7 +7,6 @@ from paho.mqtt import client as mqtt_client
 broker = 'localhost'
 port = 1883
 topic = "/boat/velocity"
-# Generate a Client ID with the publish prefix.
 client_id = f'publish-{random.randint(0, 1000)}'
 
 def connect_mqtt():
@@ -40,7 +39,7 @@ def publish(client):
             print(f"Failed to send message to topic {topic}")
         
         msg_count += 1
-        if msg_count > 50:
+        if msg_count > 500:
             break
 
 

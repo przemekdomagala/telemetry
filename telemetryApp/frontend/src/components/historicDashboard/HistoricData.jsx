@@ -2,8 +2,8 @@ import BoatVelocityHistoric from "./BoatVelocityHistoric";
 
 function HistoricData() {
   return (
-    <div>
-      <h2>Historic Data</h2>
+    <div className="historic-page-container">
+      <h1 className="page-title">Historic Data</h1>
       <BoatVelocityHistoric />
     </div>
   );
