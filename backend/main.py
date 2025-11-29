@@ -1,15 +1,15 @@
 import os
+from routes.routes import router
 from contextlib import asynccontextmanager
 from database.postgres import init_postgres, close_postgres
 from fastapi import FastAPI, WebSocket, WebSocketDisconnect
 from fastapi.middleware.cors import CORSMiddleware
-from routes.velocity_routes import velocity_router
 from mqtt.mqtt_handler import fast_mqtt, wait_for_mqtt_connection
-from websocket_manager.websocket_manager import manager
 from utils.logger import get_logger
-from webrtc_signaling.client import Client
 from typing import Dict
+from webrtc_signaling.client import Client
 from webrtc_signaling.signaling_utils import handle_signaling, send_message
+from websocket_manager.websocket_manager import websocket_managers, websocket_endpoint
 
 logger = get_logger()
 
@@ -36,7 +36,7 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-app.include_router(velocity_router, prefix="/api")
+app.include_router(router, prefix="/api")
 
 @app.get("/")
 async def func():
@@ -49,14 +49,25 @@ async def health():
         "mqtt_connected": fast_mqtt.client.is_connected if hasattr(fast_mqtt, 'client') else False
     }
 
-@app.websocket("/ws/velocity")
-async def websocket_endpoint(websocket: WebSocket):
-    await manager.connect(websocket)
-    try:
-        while True:
-            await websocket.receive_text()  
-    except WebSocketDisconnect:
-        manager.disconnect(websocket)
+@app.websocket("/ws/battery")
+async def websocket_battery_endpoint(websocket: WebSocket):
+    await websocket_endpoint(websocket, websocket_managers["battery"])
+
+@app.websocket("/ws/mission")
+async def websocket_mission_endpoint(websocket: WebSocket):
+    await websocket_endpoint(websocket, websocket_managers["mission"])
+
+@app.websocket("/ws/mode")
+async def websocket_mode_endpoint(websocket: WebSocket):
+    await websocket_endpoint(websocket, websocket_managers["mode"])
+
+@app.websocket("/ws/obstacle")
+async def websocket_obstacle_endpoint(websocket: WebSocket):
+    await websocket_endpoint(websocket, websocket_managers["obstacle"])
+
+@app.websocket("/ws/position")
+async def websocket_position_endpoint(websocket: WebSocket):
+    await websocket_endpoint(websocket, websocket_managers["position"])
 
 @app.websocket("/ws/signaling")
 async def signaling_server_websocket_endpoint(websocket: WebSocket):

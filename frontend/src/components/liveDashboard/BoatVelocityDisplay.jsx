@@ -1,7 +1,7 @@
 import { useState, useCallback } from 'react';
 import useWebSocket from '../../hooks/useWebSocket';
 
-const WS_URL = `${import.meta.env.VITE_WS_URL}/velocity`;
+const WS_URL = `${import.meta.env.VITE_WS_URL}/position`;
 
 function BoatVelocityDisplay() {
   const [velocity, setVelocity] = useState(null);
@@ -24,7 +24,6 @@ function BoatVelocityDisplay() {
     ? new Date(timestamp).toLocaleTimeString()
     : 'N/A';
 
-  // No data ever received from WebSocket
   if (!hasData) {
     return (
       <div>

@@ -47,7 +47,8 @@ async def wait_for_mqtt_connection():
 
 @fast_mqtt.on_connect()
 def connect(client, flags, rc, properties):
-    fast_mqtt.client.subscribe("/boat/velocity")  
+    for key in handlers.keys():
+        client.subscribe(key)
     logger.info(f"Connected: {client}, flags: {flags}, rc: {rc}, properties: {properties}")
 
 @fast_mqtt.on_message()

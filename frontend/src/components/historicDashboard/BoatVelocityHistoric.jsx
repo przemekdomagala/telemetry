@@ -1,7 +1,7 @@
 import React from 'react';
 import useApi from '../../hooks/useApi';
 
-const API_URL = `${import.meta.env.VITE_API_URL}/velocity`;
+const API_URL = `${import.meta.env.VITE_API_URL}/position`;
 
 function BoatVelocityHistoric() {
     
