@@ -1,5 +1,6 @@
 import os
 import asyncpg
+import asyncio
 from datetime import datetime
 from typing import Optional
 from utils.logger import get_logger
@@ -12,23 +13,32 @@ conn_pool: Optional[asyncpg.Pool] = None
 
 async def init_postgres() -> None:
     """
-    Initialize the PostgreSQL connection pool and create the velocity table if it doesn't exist.
+    Initialize the PostgreSQL connection pool and create tables if they don't exist.
     """
     global conn_pool
-    try:
-        logger.info("Initializing PostgreSQL connection pool...")
+    max_retries = 30
+    retry_delay = 2
+    
+    for attempt in range(max_retries):
+        try:
+            logger.info(f"Initializing PostgreSQL connection pool...")
 
-        conn_pool = await asyncpg.create_pool(
-            dsn=DATABASE_URL, min_size=1, max_size=10
-        )
-        
-        await create_velocity_table()
+            conn_pool = await asyncpg.create_pool(
+                dsn=DATABASE_URL, min_size=1, max_size=10
+            )
             
-        logger.info("PostgreSQL connection pool and tables created successfully.")
+            await create_all_tables()
+                
+            logger.info("PostgreSQL connection pool and tables created successfully.")
+            return
 
-    except Exception as e:
-        logger.error(f"Error initializing PostgreSQL connection pool: {e}")
-        raise
+        except Exception as e:
+            logger.warning(f"PostgreSQL connection attempt {attempt + 1}/{max_retries} failed: {e}")
+            if attempt < max_retries - 1:
+                await asyncio.sleep(retry_delay)
+            else:
+                logger.error("Failed to connect to PostgreSQL after all retries")
+                raise
 
 
 async def get_postgres() -> asyncpg.Pool:
@@ -69,44 +79,270 @@ async def close_postgres() -> None:
 
 
 # region create
-async def create_velocity_table():
+async def create_battery_table():
         async with conn_pool.acquire() as conn:
             await conn.execute("""
-                CREATE TABLE IF NOT EXISTS velocity (
+                CREATE TABLE IF NOT EXISTS battery (
                     id SERIAL,
                     timestamp TIMESTAMPTZ NOT NULL,
-                    velocity FLOAT NOT NULL,
+                    left_battery_voltage FLOAT NOT NULL,
+                    right_battery_voltage FLOAT NOT NULL,
+                    central_battery_voltage FLOAT NOT NULL,
                     created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
                     PRIMARY KEY (id, timestamp)
                 )
             """)
-            
+
             try:
                 await conn.execute("""
-                    SELECT create_hypertable('velocity', 'timestamp', 
+                    SELECT create_hypertable('battery', 'timestamp', 
                         if_not_exists => TRUE,
                         create_default_indexes => TRUE,
                         chunk_time_interval => INTERVAL '1 day'
                     )
                 """)
-                logger.info("Created or confirmed velocity hypertable")
+                logger.info("Created or confirmed battery hypertable")
             except Exception as e:
                 logger.error(f"Error creating hypertable: {e}")
                 raise
 
+
+async def create_mission_table():
+        async with conn_pool.acquire() as conn:
+            await conn.execute("""
+                CREATE TABLE IF NOT EXISTS mission (
+                    id SERIAL,
+                    timestamp TIMESTAMPTZ NOT NULL,
+                    description TEXT NOT NULL,
+                    created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
+                    PRIMARY KEY (id, timestamp)
+                )
+            """)
+
+            try:
+                await conn.execute("""
+                    SELECT create_hypertable('mission', 'timestamp', 
+                        if_not_exists => TRUE,
+                        create_default_indexes => TRUE,
+                        chunk_time_interval => INTERVAL '1 day'
+                    )
+                """)
+                logger.info("Created or confirmed mission hypertable")
+            except Exception as e:
+                logger.error(f"Error creating hypertable: {e}")
+                raise
+
+
+async def create_mode_table():
+        async with conn_pool.acquire() as conn:
+            await conn.execute("""
+                CREATE TABLE IF NOT EXISTS mode (
+                    id SERIAL,
+                    timestamp TIMESTAMPTZ NOT NULL,
+                    mode TEXT NOT NULL,
+                    created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
+                    PRIMARY KEY (id, timestamp)
+                )
+            """)
+
+            try:
+                await conn.execute("""
+                    SELECT create_hypertable('mode', 'timestamp', 
+                        if_not_exists => TRUE,
+                        create_default_indexes => TRUE,
+                        chunk_time_interval => INTERVAL '1 day'
+                    )
+                """)
+                logger.info("Created or confirmed mode hypertable")
+            except Exception as e:
+                logger.error(f"Error creating hypertable: {e}")
+                raise
+
+
+async def create_obstacle_table():
+        async with conn_pool.acquire() as conn:
+            await conn.execute("""
+                CREATE TABLE IF NOT EXISTS obstacle (
+                    id SERIAL,
+                    timestamp TIMESTAMPTZ NOT NULL,
+                    latitude FLOAT NOT NULL,
+                    longitude FLOAT NOT NULL,
+                    distance FLOAT NOT NULL,
+                    created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
+                    PRIMARY KEY (id, timestamp)
+                )
+            """)
+
+            try:
+                await conn.execute("""
+                    SELECT create_hypertable('obstacle', 'timestamp', 
+                        if_not_exists => TRUE,
+                        create_default_indexes => TRUE,
+                        chunk_time_interval => INTERVAL '1 day'
+                    )
+                """)
+                logger.info("Created or confirmed obstacle hypertable")
+            except Exception as e:
+                logger.error(f"Error creating hypertable: {e}")
+                raise
+
+
+async def create_position_table():
+        async with conn_pool.acquire() as conn:
+            await conn.execute("""
+                CREATE TABLE IF NOT EXISTS position (
+                    id SERIAL,
+                    timestamp TIMESTAMPTZ NOT NULL,
+                    latitude FLOAT NOT NULL,
+                    longitude FLOAT NOT NULL,
+                    velocity FLOAT NOT NULL,
+                    heading FLOAT NOT NULL,
+                    created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
+                    PRIMARY KEY (id, timestamp)
+                )
+            """)
+
+            try:
+                await conn.execute("""
+                    SELECT create_hypertable('position', 'timestamp', 
+                        if_not_exists => TRUE,
+                        create_default_indexes => TRUE,
+                        chunk_time_interval => INTERVAL '1 day'
+                    )
+                """)
+                logger.info("Created or confirmed position hypertable")
+            except Exception as e:
+                logger.error(f"Error creating hypertable: {e}")
+                raise
+
+
+async def create_thrusters_input_table():
+        async with conn_pool.acquire() as conn:
+            await conn.execute("""
+                CREATE TABLE IF NOT EXISTS thrusters_input (
+                    id SERIAL,
+                    timestamp TIMESTAMPTZ NOT NULL,
+                    left_thruster FLOAT NOT NULL,
+                    right_thruster FLOAT NOT NULL,
+                    created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
+                    PRIMARY KEY (id, timestamp)
+                )
+            """)
+
+            try:
+                await conn.execute("""
+                    SELECT create_hypertable('thrusters_input', 'timestamp', 
+                        if_not_exists => TRUE,
+                        create_default_indexes => TRUE,
+                        chunk_time_interval => INTERVAL '1 day'
+                    )
+                """)
+                logger.info("Created or confirmed thrusters_input hypertable")
+            except Exception as e:
+                logger.error(f"Error creating hypertable: {e}")
+                raise
+
+
+async def create_all_tables():
+    await create_battery_table()
+    await create_mission_table()
+    await create_mode_table()
+    await create_obstacle_table()
+    await create_position_table()
+    await create_thrusters_input_table()
+
+
 # endregion
 
 # region insert
-async def insert_velocity(payload):
+async def insert_battery(payload):
     try:
         pool = await get_postgres()
         async with pool.acquire() as conn:
             timestamp = datetime.fromisoformat(payload['timestamp'])
             await conn.execute("""
-                INSERT INTO velocity (timestamp, velocity)
-                VALUES ($1, $2)
-            """, timestamp, payload['velocity'])
-            logger.info("Inserted velocity payload")
+                INSERT INTO battery (timestamp, left_battery_voltage, right_battery_voltage, central_battery_voltage)
+                VALUES ($1, $2, $3, $4)
+            """, timestamp, payload['left_battery_voltage'], payload['right_battery_voltage'], payload['central_battery_voltage'])
+            logger.info("Inserted battery payload")
     except Exception as e:
-        logger.error("Failed to insert velocity payload")
+        logger.error("Failed to insert battery payload")
         raise
+
+
+async def insert_mission(payload):
+    try:
+        pool = await get_postgres()
+        async with pool.acquire() as conn:
+            timestamp = datetime.fromisoformat(payload['timestamp'])
+            await conn.execute("""
+                INSERT INTO mission (timestamp, description)
+                VALUES ($1, $2)
+            """, timestamp, payload['description'])
+            logger.info("Inserted mission payload")
+    except Exception as e:
+        logger.error("Failed to insert mission payload")
+        raise
+
+
+async def insert_mode(payload):
+    try:
+        pool = await get_postgres()
+        async with pool.acquire() as conn:
+            timestamp = datetime.fromisoformat(payload['timestamp'])
+            await conn.execute("""
+                INSERT INTO mode (timestamp, mode)
+                VALUES ($1, $2)
+            """, timestamp, payload['mode'])
+            logger.info("Inserted mode payload")
+    except Exception as e:
+        logger.error("Failed to insert mode payload")
+        raise
+
+
+async def insert_obstacle(payload):
+    try:
+        pool = await get_postgres()
+        async with pool.acquire() as conn:
+            timestamp = datetime.fromisoformat(payload['timestamp'])
+            await conn.execute("""
+                INSERT INTO obstacle (timestamp, latitude, longitude, distance)
+                VALUES ($1, $2, $3, $4)
+            """, timestamp, payload['latitude'], payload['longitude'], payload['distance'])
+            logger.info("Inserted obstacle payload")
+    except Exception as e:
+        logger.error("Failed to insert obstacle payload")
+        raise
+
+
+async def insert_position(payload):
+    try:
+        pool = await get_postgres()
+        async with pool.acquire() as conn:
+            timestamp = datetime.fromisoformat(payload['timestamp'])
+            await conn.execute("""
+                INSERT INTO position (timestamp, latitude, longitude, velocity, heading)
+                VALUES ($1, $2, $3, $4, $5)
+            """, timestamp, payload['latitude'], payload['longitude'], payload['velocity'], payload['heading'])
+            logger.info("Inserted position payload")
+    except Exception as e:
+        logger.error("Failed to insert position payload")
+        raise
+
+
+async def insert_thrusters_input(payload):
+    try:
+        pool = await get_postgres()
+        async with pool.acquire() as conn:
+            timestamp = datetime.fromisoformat(payload['timestamp'])
+            await conn.execute("""
+                INSERT INTO thrusters_input (timestamp, left_thruster, right_thruster)
+                VALUES ($1, $2, $3)
+            """, timestamp, payload['left_thruster'], payload['right_thruster'])
+            logger.info("Inserted thrusters_input payload")
+    except Exception as e:
+        logger.error("Failed to insert thrusters_input payload")
+        raise
+
+
+
