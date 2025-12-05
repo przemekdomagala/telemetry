@@ -1,6 +1,12 @@
 import { useEffect, useState } from "react";
 
-const useApi = url => {
+const useApi = (url, options = {}) => {
+    const { 
+        interval = null, 
+        dependencies = [], 
+        transform = null 
+    } = options;
+
     const [data, setData] = useState(null);
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState(null);
@@ -14,7 +20,8 @@ const useApi = url => {
                     throw new Error(`HTTP error! status: ${response.status}`);
                 }
                 const result = await response.json();
-                setData(result);
+                const finalData = transform ? transform(result) : result;
+                setData(finalData);
                 setError(null);
             } catch (err) {
                 setError(err.message);
@@ -25,10 +32,11 @@ const useApi = url => {
 
         fetchData();
 
-        const intervalId = setInterval(fetchData, 1000);
-
-        return () => clearInterval(intervalId);
-    }, [url]);
+        if (interval) {
+            const intervalId = setInterval(fetchData, interval);
+            return () => clearInterval(intervalId);
+        }
+    }, [url, interval, ...dependencies]);
 
     return { data, isLoading, error };
 }

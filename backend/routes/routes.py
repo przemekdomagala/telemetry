@@ -145,4 +145,22 @@ async def get_thrusters_input(
                                   right_thruster=row['right_thruster']) for row in rows]
 
 
+@router.get("/data-time-range")
+async def get_data_time_range(db: Pool = Depends(get_postgres)):
+    query = """
+    SELECT
+        MIN(timestamp) AS start_time,
+        MAX(timestamp) AS end_time
+    FROM position
+    """
+
+    try:
+        async with db.acquire() as connection:
+            row = await connection.fetchrow(query)
+        return {
+            "start_time": row['start_time'],
+            "end_time": row['end_time']
+        }
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Database error: {str(e)}")
     

@@ -1,57 +1,50 @@
-import React from 'react';
-import useApi from '../../hooks/useApi';
+import { useRef } from 'react';
+import useHistoricData from '../../hooks/useHistoricData';
+import useCanvasPlot from '../../hooks/useCanvasPlot';
 
 const API_URL = `${import.meta.env.VITE_API_URL}/position`;
 
-function BoatVelocityHistoric() {
+function BoatVelocityHistoric({ selectedStart, selectedEnd }) {
+    const canvasRef = useRef(null);
     
-    const { data: historicData, isLoading, error } = useApi(API_URL);
+    const { filteredData, isLoading, error, data: allData } = useHistoricData(
+        API_URL,
+        selectedStart,
+        selectedEnd,
+        point => point.velocity
+    );
 
-    if (isLoading) {
-        return (
-            <div className="historic-card">
-                <div className="loading-message">Loading boat velocity data...</div>
-            </div>
-        );
-    }
-
-    if (error) {
-        return (
-            <div className="historic-card">
-                <div className="error-message">Error loading data: {error}</div>
-            </div>
-        );
-    }
-
-    if (!historicData || historicData.length === 0) {
-        return (
-            <div className="historic-card">
-                <div className="empty-message">No historic velocity data found.</div>
-            </div>
-        );
-    }
+    useCanvasPlot(canvasRef, filteredData, {
+        selectedStart,
+        selectedEnd,
+        yAxisLabel: 'Velocity',
+        yAxisUnit: 'm/s',
+        yAxisMin: 0,
+        yAxisMax: null, // Auto-calculate
+        yAxisStep: 2,
+        lineColor: '#ffff00',
+        pointColor: '#ffff00',
+        legendText: 'Boat Velocity',
+        legendColor: '#ffff00',
+        showPoints: false
+    });
 
     return (
         <div className="historic-card">
-            <h2 className="historic-title">Boat Velocity Data</h2>
-            <div className="table-wrapper">
-                <table className="historic-table">
-                    <thead>
-                        <tr>
-                            <th>Timestamp</th>
-                            <th>Velocity</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {historicData.map((entry, index) => (
-                            <tr key={index}>
-                                <td>{new Date(entry.timestamp).toLocaleString()}</td>
-                                <td className="velocity-value">{entry.velocity} m/s</td>
-                            </tr>
-                        ))}
-                    </tbody>
-                </table>
-            </div>
+            <h2 className="historic-title">Boat Velocity Over Time</h2>
+            {isLoading && <div className="loading-message">Loading boat velocity data...</div>}
+            {error && <div className="error-message">Error loading data: {error}</div>}
+            {!isLoading && !error && allData && allData.length === 0 && (
+                <div className="empty-message">No historic velocity data found.</div>
+            )}
+            {!isLoading && !error && filteredData && filteredData.length > 0 && (
+                <div className="chart-info">
+                    <canvas ref={canvasRef} width={800} height={400} className="historic-canvas"></canvas>
+                </div>
+            )}
+            {!isLoading && !error && allData && allData.length > 0 && filteredData.length === 0 && (
+                <div className="empty-message">No data in selected time range.</div>
+            )}
         </div>
     );
 }
