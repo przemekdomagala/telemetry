@@ -4,12 +4,18 @@ import useWebSocket from '../../hooks/useWebSocket';
 const WS_URL = `${import.meta.env.VITE_WS_URL}/position`;
 
 function BoatVelocityDisplay() {
+  const [latitude, setLatitude] = useState(null);
+  const [longitude, setLongitude] = useState(null);
   const [velocity, setVelocity] = useState(null);
+  const [heading, setHeading] = useState(null);
   const [timestamp, setTimestamp] = useState(null);
   const [hasData, setHasData] = useState(false);
 
   const onWebSocketMessage = useCallback((data) => {
     setHasData(true);
+    setLatitude(data.latitude);
+    setLongitude(data.longitude);
+    setHeading(data.heading);
     setVelocity(data.velocity);
     setTimestamp(data.timestamp);
   }, []);
@@ -28,7 +34,7 @@ function BoatVelocityDisplay() {
     return (
       <div>
         <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-          <h2>Live Boat Velocity</h2>
+          <h2>Boat position data</h2>
           {connectionStatus}
         </div>
         <p>No data available</p>
@@ -39,13 +45,19 @@ function BoatVelocityDisplay() {
   return (
     <div>
       <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-        <h2>Live Boat Velocity</h2>
+        <h2>Boat position data</h2>
         {connectionStatus}
       </div>
 
-      <p style={{ fontSize: '36px', fontWeight: 'bold', margin: '10px 0' }}>
-        {velocity !== null ? velocity.toFixed(1) : '---'}
-        <span style={{ fontSize: '18px', fontWeight: 'normal' }}> m/s</span>
+      <p style={{ fontSize: '18px', fontWeight: 'bold', margin: '10px 0' }}>
+        {latitude !== null
+          ? `Lat: ${latitude.toFixed(4)}°`
+          : 'Lat: ---°'}<br></br>
+        {longitude !== null
+          ? `Lon: ${longitude.toFixed(4)}°`
+          : 'Lon: ---°'}<br></br>
+        {heading !== null ? `Heading: ${heading.toFixed(1)}°` : 'Heading: ---°'}<br></br>
+        {velocity !== null ? ` Velocity: ${velocity.toFixed(1)} m/s` : '---'}
       </p>
 
       <p>Last updated: {lastUpdatedTime}</p>
