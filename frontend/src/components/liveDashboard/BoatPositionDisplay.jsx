@@ -3,7 +3,7 @@ import useWebSocket from '../../hooks/useWebSocket';
 
 const WS_URL = `${import.meta.env.VITE_WS_URL}/position`;
 
-function BoatVelocityDisplay() {
+function BoatPositionDisplay() {
   const [latitude, setLatitude] = useState(null);
   const [longitude, setLongitude] = useState(null);
   const [velocity, setVelocity] = useState(null);
@@ -51,10 +51,10 @@ function BoatVelocityDisplay() {
 
       <p style={{ fontSize: '18px', fontWeight: 'bold', margin: '10px 0' }}>
         {latitude !== null
-          ? `Lat: ${latitude.toFixed(4)}°`
+          ? `Lat: ${latitude.toFixed(6)}°`
           : 'Lat: ---°'}<br></br>
         {longitude !== null
-          ? `Lon: ${longitude.toFixed(4)}°`
+          ? `Lon: ${longitude.toFixed(6)}°`
           : 'Lon: ---°'}<br></br>
         {heading !== null ? `Heading: ${heading.toFixed(1)}°` : 'Heading: ---°'}<br></br>
         {velocity !== null ? ` Velocity: ${velocity.toFixed(1)} m/s` : '---'}
@@ -65,4 +65,4 @@ function BoatVelocityDisplay() {
   );
 }
 
-export default BoatVelocityDisplay;
+export default BoatPositionDisplay;

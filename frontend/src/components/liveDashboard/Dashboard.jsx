@@ -1,5 +1,6 @@
-import BoatVelocityDisplay from './BoatVelocityDisplay';
+import BoatPositionDisplay from './BoatPositionDisplay';
 import WebRTCReceiver from './WebRTCReceiver';
+import MapDisplay from './MapDisplay';
 import '../../css/Dashboard.css';
 
 function Dashboard() {
@@ -9,11 +10,15 @@ function Dashboard() {
 
       <div className="dashboard-content">
         <div className="dashboard-card">
-          <BoatVelocityDisplay />
+          <BoatPositionDisplay />
         </div>
 
         <div className="dashboard-card">
           <WebRTCReceiver />
+        </div>
+
+        <div className="dashboard-card">
+          <MapDisplay />
         </div>
       </div>
     </div>
