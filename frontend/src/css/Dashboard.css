@@ -2,7 +2,6 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  padding: 0px 0px;
   min-height: 100vh;
   color: #fff;
 }
@@ -16,15 +15,46 @@
 
 .dashboard-content {
   display: grid;
-  grid-template-columns: repeat(2, 1fr);
+  grid-template-columns: 2fr 1fr 1fr;
   gap: 10px;
   width: 100%;
-  max-width: 1300px;
+  max-width: 95%;
+  padding: 0 0px;
+}
+
+.camera-card {
+  grid-column: 1 / 2;
+  grid-row: 1 / 2;
+}
+
+.map-card {
+  grid-column: 2 / 3;
+  grid-row: 1 / 2;
+}
+
+.mission-card {
+  grid-column: 3 / 4;
+  grid-row: 1 / 2;
+}
+
+.battery-card {
+  grid-column: 1 / 2;
+  grid-row: 2 / 3;
+}
+
+.position-card {
+  grid-column: 2 / 3;
+  grid-row: 2 / 3;
+}
+
+.status-card {
+  grid-column: 3 / 4;
+  grid-row: 2 / 3;
 }
 
 .dashboard-card {
   background-color: #1d1d1d;
-  padding: 10px;
+  padding: 5px;
   border-radius: 16px;
   box-shadow: 0 0 20px rgba(0,0,0,0.25);
   transition: transform 0.2s ease, box-shadow 0.2s ease;
@@ -99,7 +129,7 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  padding: 60px 20px;
+  padding: 20px 20px;
   min-height: 100vh;
   color: #fff;
 }
@@ -113,7 +143,7 @@
 
 .historic-card {
   background-color: #1d1d1d;
-  padding: 30px;
+  padding: 10px;
   border-radius: 16px;
   box-shadow: 0 0 20px rgba(0,0,0,0.25);
   width: 100%;
@@ -181,7 +211,7 @@
 .error-message,
 .empty-message {
   text-align: center;
-  padding: 40px 20px;
+  padding: 20px 20px;
   font-size: 16px;
 }
 
