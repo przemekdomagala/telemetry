@@ -4,7 +4,9 @@ import useWebSocket from '../../hooks/useWebSocket';
 import 'leaflet/dist/leaflet.css';
 
 const WS_URL = `${import.meta.env.VITE_WS_URL}/position`;
+const OBSTACLES_WS_URL = `${import.meta.env.VITE_WS_URL}/obstacle`;
 const TRAIL_LENGTH = 10;
+const OBSTACLES_LENGTH = 10;
 
 function MapUpdater({ center }) {
     const map = useMap();
@@ -23,6 +25,21 @@ export default function MapDisplay() {
     const [boatLongitude, setBoatLongitude] = useState(null);
     const [isFirstPosition, setIsFirstPosition] = useState(true);
     const [trail, setTrail] = useState([]);
+
+    const [obstacleLatitude, setObstacleLatitude] = useState(null);
+    const [obstacleLongitude, setObstacleLongitude] = useState(null);
+    const [obstacles, setObstacles] = useState([]);
+
+    useWebSocket(OBSTACLES_WS_URL, useCallback((data) => {
+        setObstacleLatitude(data.latitude);
+        setObstacleLongitude(data.longitude);
+
+        setObstacles(prevObstacles => {
+            const newObstacles = [...prevObstacles, [data.latitude, data.longitude]];
+            return newObstacles.slice(-OBSTACLES_LENGTH);
+        });
+    }, []));
+    
 
     const onWebSocketMessage = useCallback((data) => {
         setBoatLatitude(data.latitude);
@@ -80,6 +97,23 @@ export default function MapDisplay() {
                         </Popup>
                     </CircleMarker>
                 )}
+                {obstacles.map((obstacle, index) => (
+                    <CircleMarker
+                        key={`obstacle-${index}`}
+                        center={obstacle}
+                        radius={6}
+                        fillColor="red"
+                        color="darkred"
+                        weight={2}
+                        fillOpacity={0.7}
+                    >
+                        <Popup>
+                            Obstacle {index + 1}<br />
+                            Lat: {obstacle[0].toFixed(6)}°<br />
+                            Lon: {obstacle[1].toFixed(6)}°
+                        </Popup>
+                    </CircleMarker>
+                ))}
             </MapContainer>
             </div>
         </div>
