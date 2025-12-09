@@ -1,4 +1,4 @@
-import { useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import useHistoricData from '../../hooks/useHistoricData';
 import useCanvasPlot from '../../hooks/useCanvasPlot';
 
@@ -14,6 +14,23 @@ function BoatVelocityHistoric({ selectedStart, selectedEnd }) {
         point => point.velocity
     );
 
+    const [canvasSize, setCanvasSize] = useState({ width: 800, height: 400 });
+
+    useEffect(() => {
+        const handleResize = () => {
+            if (canvasRef.current?.parentElement) {
+                const containerWidth = canvasRef.current.parentElement.offsetWidth;
+                const width = Math.min(containerWidth - 40, 800);
+                const height = Math.max(width * 0.5, 300);
+                setCanvasSize({ width, height });
+            }
+        };
+
+        handleResize();
+        window.addEventListener('resize', handleResize);
+        return () => window.removeEventListener('resize', handleResize);
+    }, [canvasRef]);
+
     useCanvasPlot(canvasRef, filteredData, {
         selectedStart,
         selectedEnd,
@@ -26,7 +43,8 @@ function BoatVelocityHistoric({ selectedStart, selectedEnd }) {
         pointColor: '#ffff00',
         legendText: 'Boat Velocity',
         legendColor: '#ffff00',
-        showPoints: false
+        showPoints: false,
+        canvasSize
     });
 
     return (

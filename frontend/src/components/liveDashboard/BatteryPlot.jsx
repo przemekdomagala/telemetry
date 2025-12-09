@@ -6,10 +6,27 @@ const TIME_WINDOW = 5 * 60 * 1000;
 
 function BatteryPlot() {
     const canvasRef = useRef(null);
+    const containerRef = useRef(null);
     const plotStartTimestampRef = useRef(null);
     
     const [batteryData, setBatteryData] = useState([]);
     const [hasData, setHasData] = useState(false);
+    const [canvasSize, setCanvasSize] = useState({ width: 800, height: 400 });
+
+    useEffect(() => {
+        const handleResize = () => {
+            if (containerRef.current) {
+                const containerWidth = containerRef.current.offsetWidth;
+                const width = Math.min(containerWidth - 40, 800);
+                const height = Math.max(width * 0.5, 300);
+                setCanvasSize({ width, height });
+            }
+        };
+
+        handleResize();
+        window.addEventListener('resize', handleResize);
+        return () => window.removeEventListener('resize', handleResize);
+    }, []);
 
     const onWebSocketMessage = useCallback((data) => {
         const timestamp = new Date(data.timestamp).getTime();
@@ -49,15 +66,14 @@ function BatteryPlot() {
         const ctx = canvas.getContext('2d');
         
         const dpr = window.devicePixelRatio || 1;
-        const rect = canvas.getBoundingClientRect();
         
-        canvas.width = rect.width * dpr;
-        canvas.height = rect.height * dpr;
+        canvas.width = canvasSize.width * dpr;
+        canvas.height = canvasSize.height * dpr;
         
         ctx.scale(dpr, dpr);
         
-        const width = rect.width;
-        const height = rect.height;
+        const width = canvasSize.width;
+        const height = canvasSize.height;
 
         ctx.fillStyle = 'black';
         ctx.fillRect(0, 0, width, height);
@@ -73,6 +89,12 @@ function BatteryPlot() {
             startTime = now - TIME_WINDOW;
         }
 
+        // Dynamic margins based on canvas size
+        const marginLeft = width > 600 ? 60 : 40;
+        const marginRight = width > 600 ? 20 : 10;
+        const marginBottom = 60;
+        const marginTop = 20;
+
         // Voltage range
         const allVoltages = batteryData.flatMap(d => [d.left, d.right, d.central]);
         const minVoltage = Math.floor(Math.min(...allVoltages));
@@ -84,27 +106,27 @@ function BatteryPlot() {
         ctx.lineWidth = 0.5;
         const voltageStep = 1;
         for (let v = minVoltage; v <= maxVoltage; v += voltageStep) {
-            const y = height - 60 - ((v - minVoltage) / voltageRange) * (height - 80);
+            const y = height - marginBottom - ((v - minVoltage) / voltageRange) * (height - marginBottom - marginTop);
             ctx.beginPath();
-            ctx.moveTo(60, y);
-            ctx.lineTo(width - 20, y);
+            ctx.moveTo(marginLeft, y);
+            ctx.lineTo(width - marginRight, y);
             ctx.stroke();
 
             ctx.fillStyle = '#aaa';
-            ctx.font = '11px sans-serif';
+            ctx.font = `${width > 600 ? 11 : 9}px sans-serif`;
             ctx.textAlign = 'right';
-            ctx.fillText(`${v.toFixed(1)}V`, 55, y + 4);
+            ctx.fillText(`${v.toFixed(1)}V`, marginLeft - 5, y + 4);
         }
 
-        // Time labels
+        // Time labels 
         ctx.fillStyle = '#aaa';
-        ctx.font = '11px sans-serif';
+        ctx.font = `${width > 600 ? 11 : 9}px sans-serif`;
         ctx.textAlign = 'center';
         
-        const numLabels = 6;
+        const numLabels = width > 600 ? 6 : 3;
         for (let i = 0; i <= numLabels; i++) {
             const time = startTime + (TIME_WINDOW / numLabels) * i;
-            const x = 60 + ((width - 80) / numLabels) * i;
+            const x = marginLeft + ((width - marginLeft - marginRight) / numLabels) * i;
             const date = new Date(time);
             const timeStr = date.toLocaleTimeString('en-US', { 
                 hour: '2-digit', 
@@ -121,12 +143,10 @@ function BatteryPlot() {
             ctx.beginPath();
 
             batteryData.forEach((point, index) => {
-                // Calculate X based on the dynamic startTime
-                const x = 60 + ((point.timestamp - startTime) / TIME_WINDOW) * (width - 80);
-                const y = height - 60 - ((point[key] - minVoltage) / voltageRange) * (height - 80);
+                const x = marginLeft + ((point.timestamp - startTime) / TIME_WINDOW) * (width - marginLeft - marginRight);
+                const y = height - marginBottom - ((point[key] - minVoltage) / voltageRange) * (height - marginBottom - marginTop);
 
-                // Prevent drawing lines backward/messy if data is slightly out of sync
-                if (x < 60) return; 
+                if (x < marginLeft) return;
 
                 if (index === 0) {
                     ctx.moveTo(x, y);
@@ -137,40 +157,58 @@ function BatteryPlot() {
             ctx.stroke();
         };
 
-        // Draw lines for each battery
-        drawLine('left', '#ff0000');      // Red for left
-        drawLine('right', '#00ff00');     // Green for right
-        drawLine('central', '#ffff00');   // Yellow for central
+        drawLine('left', '#ff0000');
+        drawLine('right', '#00ff00');
+        drawLine('central', '#ffff00');
 
-        // Draw legend
-        const legendX = width - 180;
-        const legendY = 20;
+        const legendX = width > 600 ? width - 180 : marginLeft;
+        const legendY = width > 600 ? 20 : height - 25;
+        const fontSize = width > 600 ? 12 : 10;
         const legendItems = [
-            { label: 'Left Battery', color: '#ff0000' },
-            { label: 'Right Battery', color: '#00ff00' },
-            { label: 'Central Battery', color: '#ffff00' }
+            { label: 'Left', color: '#ff0000' },
+            { label: 'Right', color: '#00ff00' },
+            { label: 'Central', color: '#ffff00' }
         ];
 
-        legendItems.forEach((item, i) => {
-            const y = legendY + i * 20;
-            
-            ctx.strokeStyle = item.color;
-            ctx.lineWidth = 2;
-            ctx.beginPath();
-            ctx.moveTo(legendX, y);
-            ctx.lineTo(legendX + 20, y);
-            ctx.stroke();
+        if (width > 600) {
+            legendItems.forEach((item, i) => {
+                const y = legendY + i * 20;
+                
+                ctx.strokeStyle = item.color;
+                ctx.lineWidth = 2;
+                ctx.beginPath();
+                ctx.moveTo(legendX, y);
+                ctx.lineTo(legendX + 20, y);
+                ctx.stroke();
 
-            ctx.fillStyle = '#fff';
-            ctx.font = '12px sans-serif';
-            ctx.textAlign = 'left';
-            ctx.fillText(item.label, legendX + 30, y + 4);
-        });
+                ctx.fillStyle = '#fff';
+                ctx.font = `${fontSize}px sans-serif`;
+                ctx.textAlign = 'left';
+                ctx.fillText(item.label, legendX + 30, y + 4);
+            });
+        } else {
+            const spacing = (width - 2 * marginLeft) / legendItems.length;
+            legendItems.forEach((item, i) => {
+                const x = legendX + i * spacing;
+                
+                ctx.strokeStyle = item.color;
+                ctx.lineWidth = 2;
+                ctx.beginPath();
+                ctx.moveTo(x, legendY);
+                ctx.lineTo(x + 15, legendY);
+                ctx.stroke();
 
-    }, [batteryData]);
+                ctx.fillStyle = '#fff';
+                ctx.font = `${fontSize}px sans-serif`;
+                ctx.textAlign = 'left';
+                ctx.fillText(item.label, x + 20, legendY + 4);
+            });
+        }
+
+    }, [batteryData, canvasSize]);
 
     return (
-        <div className="battery-plot">
+        <div className="battery-plot" ref={containerRef}>
             <div className="container">
                 <h4>Battery Voltages</h4>
                 {!hasData && <p>Waiting for battery data...</p>}
@@ -179,9 +217,10 @@ function BatteryPlot() {
                         <canvas 
                             ref={canvasRef} 
                             style={{ 
-                                width: '800px', 
-                                height: '400px', 
-                                border: '1px solid #333' 
+                                width: `${canvasSize.width}px`, 
+                                height: `${canvasSize.height}px`, 
+                                border: '1px solid #333',
+                                maxWidth: '100%'
                             }}
                         ></canvas>
                     </>

@@ -50,7 +50,7 @@ export default function MapDisplay() {
             <MapContainer 
                 center={[50.0328, 19.9905]} 
                 zoom={12} 
-                style={{ height: "400px", width: "100%" }}
+                style={{ height: "clamp(300px, 50vw, 400px)", width: "100%" }}
             >
                 <TileLayer
                     url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
