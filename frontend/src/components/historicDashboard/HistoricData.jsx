@@ -1,5 +1,10 @@
 import React, { useEffect, useState } from 'react';
 import BoatVelocityHistoric from "./BoatVelocityHistoric";
+import BatteriesHistoric from "./BatteriesHistoric";
+import MapHistoric from "./MapHistoric";
+import BoatModeHistoric from './BoatModeHistorix';
+import ThrustersHistoric from './ThrustersHistoric';
+import ClosestObstacleHistoric from './ClosestObstacleHistoric';
 import useApi from '../../hooks/useApi';
 import '../../css/Dashboard.css';
 
@@ -146,6 +151,8 @@ function HistoricData() {
     const [year, month, day] = dateStr.split('-');
     
     const newStart = Date.UTC(year, month - 1, day, hours, minutes);
+    
+    console.log('Start time selected:', timeStr, 'Timestamp:', newStart, 'Date:', new Date(newStart).toISOString());
 
     if (!isNaN(newStart) && newStart >= dataRange.oldest && newStart <= dataRange.newest) {
       setSelectedStart(newStart);
@@ -190,8 +197,17 @@ function HistoricData() {
     const windowMs = minutes * 60 * 1000;
     const newEnd = dataRange.newest;
     const newStart = Math.max(dataRange.oldest, newEnd - windowMs);
-    setSelectedStart(newStart);
-    setSelectedEnd(newEnd);
+    
+    const roundToFiveMinutes = (timestamp) => {
+      const date = new Date(timestamp);
+      const mins = date.getUTCMinutes();
+      const roundedMinutes = Math.floor(mins / 5) * 5;
+      date.setUTCMinutes(roundedMinutes, 0, 0);
+      return date.getTime();
+    };
+    
+    setSelectedStart(roundToFiveMinutes(newStart));
+    setSelectedEnd(roundToFiveMinutes(newEnd));
   };
 
   return (
@@ -269,10 +285,39 @@ function HistoricData() {
             </div>
           </div>
 
-          <BoatVelocityHistoric 
-            selectedStart={selectedStart} 
-            selectedEnd={selectedEnd} 
-          />
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '20px', marginBottom: '20px' }}>
+            <BoatVelocityHistoric 
+              selectedStart={selectedStart} 
+              selectedEnd={selectedEnd} 
+            />
+
+            <BatteriesHistoric 
+              selectedStart={selectedStart} 
+              selectedEnd={selectedEnd} 
+            />
+
+            <BoatModeHistoric
+              selectedStart={selectedStart}
+              selectedEnd={selectedEnd}
+            />
+          </div>
+
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '20px', marginBottom: '20px' }}>
+            <ThrustersHistoric
+              selectedStart={selectedStart}
+              selectedEnd={selectedEnd}
+            />
+
+            <ClosestObstacleHistoric
+              selectedStart={selectedStart}
+              selectedEnd={selectedEnd}
+            />
+
+            <MapHistoric 
+              selectedStart={selectedStart} 
+              selectedEnd={selectedEnd} 
+            />
+          </div>
         </>
       )}
     </div>
