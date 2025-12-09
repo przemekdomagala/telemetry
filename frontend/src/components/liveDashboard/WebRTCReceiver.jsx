@@ -5,14 +5,13 @@ const WebRTCReceiver = () => {
     const rosImageRef = useRef(null);
     const placeholderRef = useRef(null);
 
-    const { status, isReceiving, isConnected, streamStatus } = useWebRTC({
+    useWebRTC({
         rosImageRef,
         placeholderRef
     });
 
     return (
         <div className="container">
-            <h4>Camera Image</h4>
 
             <div className="video-container">
                 <img 
@@ -23,18 +22,6 @@ const WebRTCReceiver = () => {
                 />
                 <div ref={placeholderRef} className="placeholder">
                     Waiting for camera stream from client...
-                </div>
-            </div>
-
-            <div className="stats">
-                <div className="stat">
-                    <div className="stat-label">Stream Status</div>
-                    <div 
-                        className="stat-value" 
-                        style={{ color: streamStatus === 'LIVE' ? '#4CAF50' : '#f44336' }}
-                    >
-                        {streamStatus}
-                    </div>
                 </div>
             </div>
         </div>

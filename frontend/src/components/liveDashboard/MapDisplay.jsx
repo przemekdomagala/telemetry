@@ -45,7 +45,6 @@ export default function MapDisplay() {
     return(
         <div className="map-display">
             <div className="container">
-                <h4>Map</h4>
 
             <MapContainer 
                 center={[50.0328, 19.9905]} 

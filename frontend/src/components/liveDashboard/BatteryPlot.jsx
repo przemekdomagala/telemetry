@@ -210,20 +210,13 @@ function BatteryPlot() {
     return (
         <div className="battery-plot" ref={containerRef}>
             <div className="container">
-                <h4>Battery Voltages</h4>
                 {!hasData && <p>Waiting for battery data...</p>}
                 {hasData && (
-                    <>
-                        <canvas 
-                            ref={canvasRef} 
-                            style={{ 
-                                width: `${canvasSize.width}px`, 
-                                height: `${canvasSize.height}px`, 
-                                border: '1px solid #333',
-                                maxWidth: '100%'
-                            }}
-                        ></canvas>
-                    </>
+                    <canvas 
+                        ref={canvasRef} 
+                        width={canvasSize.width}
+                        height={canvasSize.height}
+                    ></canvas>
                 )}
             </div>
         </div>

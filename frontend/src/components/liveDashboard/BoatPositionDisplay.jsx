@@ -28,20 +28,16 @@ function BoatPositionDisplay() {
 
   if (!hasData) {
     return (
-      <div>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-          <h2>Boat position data</h2>
-        </div>
+      <div className="container">
+        <h4>Boat position data</h4>
         <p>No data available</p>
       </div>
     );
   }
 
   return (
-    <div>
-      <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-        <h2>Boat position data</h2>
-      </div>
+    <div className="container">
+      <h4>Boat position data</h4>
 
       <p style={{ fontSize: '18px', fontWeight: 'bold', margin: '10px 0' }}>
         {latitude !== null
