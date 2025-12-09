@@ -13,7 +13,7 @@ const useCanvasPlot = (canvasRef, data, config = {}) => {
         yAxisLabel = 'Value',
         yAxisUnit = '',
         yAxisMin = 0,
-        yAxisMax = null, // Auto-calculate if null
+        yAxisMax = null, 
         yAxisStep = 2,
         gridColor = '#2a2a2a',
         lineColor = '#00ff00',
@@ -33,17 +33,14 @@ const useCanvasPlot = (canvasRef, data, config = {}) => {
         const width = canvas.width;
         const height = canvas.height;
 
-        // Clear the canvas
         ctx.fillStyle = 'black';
         ctx.fillRect(0, 0, width, height);
 
-        // Calculate value scale
         const values = data.map(p => p.value || p.velocity || 0);
         const maxValue = yAxisMax !== null ? yAxisMax : Math.max(yAxisMin + yAxisStep, ...values);
         const minValue = yAxisMin;
         const valueRange = maxValue - minValue;
 
-        // Draw grid lines and Y-axis labels
         ctx.strokeStyle = gridColor;
         ctx.lineWidth = 0.5;
         for (let i = minValue; i <= maxValue; i += yAxisStep) {
@@ -59,7 +56,6 @@ const useCanvasPlot = (canvasRef, data, config = {}) => {
             ctx.fillText(`${i.toFixed(1)} ${yAxisUnit}`, 55, y + 4);
         }
 
-        // Draw X-axis time labels
         ctx.fillStyle = '#aaa';
         ctx.font = '11px sans-serif';
         ctx.textAlign = 'center';
@@ -73,15 +69,16 @@ const useCanvasPlot = (canvasRef, data, config = {}) => {
             const timeStr = date.toLocaleTimeString('en-US', { 
                 hour: '2-digit', 
                 minute: '2-digit',
-                hour12: false 
+                hour12: false,
+                timeZone: 'UTC'
             });
             ctx.fillText(timeStr, x, height - 35);
         }
 
-        // Plot the data
         ctx.strokeStyle = lineColor;
         ctx.lineWidth = lineWidth;
-        ctx.beginPath();
+
+        const maxGapMs = 5000;
 
         data.forEach((point, index) => {
             const timestamp = point.timestamp || new Date(point.timestamp).getTime();
@@ -91,12 +88,25 @@ const useCanvasPlot = (canvasRef, data, config = {}) => {
             const y = height - 60 - ((value - minValue) / valueRange) * (height - 80);
 
             if (index === 0) {
+                ctx.beginPath();
                 ctx.moveTo(x, y);
             } else {
-                ctx.lineTo(x, y);
+                const prevTimestamp = data[index - 1].timestamp || new Date(data[index - 1].timestamp).getTime();
+                const timeDiff = timestamp - prevTimestamp;
+                
+                if (timeDiff > maxGapMs) {
+                    ctx.stroke();
+                    ctx.beginPath();
+                    ctx.moveTo(x, y);
+                } else {
+                    ctx.lineTo(x, y);
+                }
+            }
+            
+            if (index === data.length - 1) {
+                ctx.stroke();
             }
         });
-        ctx.stroke();
 
         // Draw data points
         if (showPoints) {

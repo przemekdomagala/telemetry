@@ -20,11 +20,7 @@ function BoatPositionDisplay() {
     setTimestamp(data.timestamp);
   }, []);
 
-  const wsConnected = useWebSocket(WS_URL, onWebSocketMessage);
-
-  const connectionStatus = wsConnected ? 
-    <span style={{ color: 'green', fontSize: '12px' }}>●</span> : 
-    <span style={{ color: 'red', fontSize: '12px' }}>●</span>;
+  useWebSocket(WS_URL, onWebSocketMessage);
 
   const lastUpdatedTime = timestamp
     ? new Date(timestamp).toLocaleTimeString()
@@ -35,7 +31,6 @@ function BoatPositionDisplay() {
       <div>
         <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
           <h2>Boat position data</h2>
-          {connectionStatus}
         </div>
         <p>No data available</p>
       </div>
@@ -46,7 +41,6 @@ function BoatPositionDisplay() {
     <div>
       <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
         <h2>Boat position data</h2>
-        {connectionStatus}
       </div>
 
       <p style={{ fontSize: '18px', fontWeight: 'bold', margin: '10px 0' }}>

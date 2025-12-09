@@ -2,7 +2,7 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  padding: 60px 20px;
+  padding: 0px 0px;
   min-height: 100vh;
   color: #fff;
 }
@@ -15,24 +15,18 @@
 }
 
 .dashboard-content {
-  display: flex;
-  flex-direction: row;
-  justify-content: center;
-  align-items: flex-start;   
-  gap: 32px;
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 10px;
   width: 100%;
   max-width: 1300px;
 }
 
-
 .dashboard-card {
   background-color: #1d1d1d;
-  padding: 30px;
+  padding: 10px;
   border-radius: 16px;
   box-shadow: 0 0 20px rgba(0,0,0,0.25);
-  flex: 1;
-  max-width: 550px;
-  min-width: 350px;
   transition: transform 0.2s ease, box-shadow 0.2s ease;
 }
 
@@ -210,10 +204,69 @@
   border-radius: 8px;
 }
 
+.cascading-selectors-container {
+  display: flex;
+  gap: 30px;
+  margin-bottom: 20px;
+  flex-wrap: wrap;
+}
+
+.cascading-time-selector {
+  flex: 1;
+  min-width: 300px;
+}
+
+.cascading-time-selector h3 {
+  color: #ddd;
+  font-size: 16px;
+  font-weight: 500;
+  margin-bottom: 12px;
+}
+
+.time-dropdowns {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.time-dropdown-small {
+  padding: 8px 12px;
+  background-color: #3a3a3a;
+  color: #fff;
+  border: 1px solid #555;
+  border-radius: 6px;
+  font-size: 14px;
+  cursor: pointer;
+  outline: none;
+  transition: all 0.2s ease;
+  flex: 1;
+  min-width: 70px;
+}
+
+.time-dropdown-small:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.time-dropdown-small:not(:disabled):hover {
+  background-color: #4a4a4a;
+  border-color: #666;
+}
+
+.time-dropdown-small:focus {
+  border-color: #888;
+  box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.1);
+}
+
+.time-dropdown-small option {
+  background-color: #2a2a2a;
+  color: #fff;
+}
+
 .time-range-info {
   display: flex;
-  justify-content: space-around;
-  margin-bottom: 20px;
+  justify-content: center;
+  margin-bottom: 10px;
   flex-wrap: wrap;
   gap: 16px;
 }
@@ -288,12 +341,10 @@
 
 @media (max-width: 900px) {
   .dashboard-content {
-    flex-direction: column;
-    align-items: center;
+    grid-template-columns: 1fr;
   }
 
-  .dashboard-card {
-    max-width: 90%;
-    width: 100%;
+  .dashboard-card:nth-child(4) {
+    grid-column: 1;
   }
 }

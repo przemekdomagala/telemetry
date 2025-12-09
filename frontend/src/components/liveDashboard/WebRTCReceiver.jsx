@@ -12,7 +12,7 @@ const WebRTCReceiver = () => {
 
     return (
         <div className="container">
-            <h4>Stream Receiver</h4>
+            <h4>Camera Image</h4>
 
             <div className="video-container">
                 <img 

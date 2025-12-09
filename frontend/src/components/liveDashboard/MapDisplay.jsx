@@ -38,14 +38,14 @@ export default function MapDisplay() {
         }
     }, [isFirstPosition]);
 
-    const wsConnected = useWebSocket(WS_URL, onWebSocketMessage);
+    useWebSocket(WS_URL, onWebSocketMessage);
 
     const boatCenter = boatLatitude && boatLongitude ? [boatLatitude, boatLongitude] : [50.0328, 19.9905]; // default to Bagry lake
 
     return(
         <div className="map-display">
             <div className="container">
-                <h4>Map Display {wsConnected ? '🟢' : '🔴'}</h4>
+                <h4>Map</h4>
 
             <MapContainer 
                 center={[50.0328, 19.9905]} 

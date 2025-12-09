@@ -15,9 +15,16 @@ const useHistoricData = (endpoint, selectedStart, selectedEnd, valueExtractor = 
     const filteredData = useMemo(() => {
         if (!allData || !selectedStart || !selectedEnd) return [];
         
-        return allData.filter(point => {
+        const filtered = allData.filter(point => {
             const timestamp = new Date(point.timestamp).getTime();
             return timestamp >= selectedStart && timestamp <= selectedEnd;
+        });
+        
+        // Sort by timestamp to ensure chronological order
+        return filtered.sort((a, b) => {
+            const timeA = new Date(a.timestamp).getTime();
+            const timeB = new Date(b.timestamp).getTime();
+            return timeA - timeB;
         });
     }, [allData, selectedStart, selectedEnd]);
 
