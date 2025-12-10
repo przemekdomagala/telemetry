@@ -2,16 +2,16 @@ import { useEffect, useRef, useState } from 'react';
 import useHistoricData from '../../hooks/useHistoricData';
 import useCanvasPlot from '../../hooks/useCanvasPlot';
 
-const API_URL = `${import.meta.env.VITE_API_URL}/position`;
+const API_URL = `${import.meta.env.VITE_API_URL}/acceleration`;
 
-function BoatVelocityHistoric({ selectedStart, selectedEnd }) {
+export default function AccelerationHistoric({ selectedStart, selectedEnd }) {
     const canvasRef = useRef(null);
     
     const { filteredData, isLoading, error, data: allData } = useHistoricData(
         API_URL,
         selectedStart,
         selectedEnd,
-        point => point.velocity
+        point => point.acceleration
     );
 
     const [canvasSize, setCanvasSize] = useState({ width: 800, height: 400 });
@@ -34,26 +34,27 @@ function BoatVelocityHistoric({ selectedStart, selectedEnd }) {
     useCanvasPlot(canvasRef, filteredData, {
         selectedStart,
         selectedEnd,
-        yAxisLabel: 'Velocity',
-        yAxisUnit: 'm/s',
-        yAxisMin: 0,
-        yAxisMax: null, // Auto-calculate
+        yAxisLabel: 'Acceleration',
+        yAxisUnit: 'm/s²',
+        yAxisMin: -5,
+        yAxisMax: 5,
         yAxisStep: 2,
-        lineColor: '#ffff00',
-        pointColor: '#ffff00',
-        legendText: 'Boat Velocity',
-        legendColor: '#ffff00',
-        showPoints: false,
+        lineColor: '#00bcd4',
+        pointColor: '#00bcd4',
+        legendText: 'Acceleration',
+        legendColor: '#00bcd4',
+        showPoints: true,
+        pointRadius: 1,
         canvasSize
     });
 
     return (
         <div className="historic-card">
-            <h2 className="historic-title">Boat Velocity Over Time</h2>
-            {isLoading && <div className="loading-message">Loading boat velocity data...</div>}
+            <h2 className="historic-title">Acceleration Over Time</h2>
+            {isLoading && <div className="loading-message">Loading acceleration data...</div>}
             {error && <div className="error-message">Error loading data: {error}</div>}
             {!isLoading && !error && allData && allData.length === 0 && (
-                <div className="empty-message">No historic velocity data found.</div>
+                <div className="empty-message">No historic acceleration data found.</div>
             )}
             {!isLoading && !error && filteredData && filteredData.length > 0 && (
                 <div className="chart-info">
@@ -66,5 +67,3 @@ function BoatVelocityHistoric({ selectedStart, selectedEnd }) {
         </div>
     );
 }
-
-export default BoatVelocityHistoric;

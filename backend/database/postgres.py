@@ -243,6 +243,32 @@ async def create_thrusters_input_table():
                 raise
 
 
+async def create_acceleration_table():
+    async with conn_pool.acquire() as conn:
+        await conn.execute("""
+            CREATE TABLE IF NOT EXISTS acceleration (
+                id SERIAL,
+                timestamp TIMESTAMPTZ NOT NULL,
+                acceleration FLOAT NOT NULL,
+                created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
+                PRIMARY KEY (id, timestamp)
+            )
+        """)
+
+        try:
+            await conn.execute("""
+                SELECT create_hypertable('acceleration', 'timestamp', 
+                    if_not_exists => TRUE,
+                    create_default_indexes => TRUE,
+                    chunk_time_interval => INTERVAL '1 day'
+                )
+            """)
+            logger.info("Created or confirmed acceleration hypertable")
+        except Exception as e:
+            logger.error(f"Error creating hypertable: {e}")
+            raise
+
+
 async def create_all_tables():
     await create_battery_table()
     await create_mission_table()
@@ -250,6 +276,7 @@ async def create_all_tables():
     await create_obstacle_table()
     await create_position_table()
     await create_thrusters_input_table()
+    await create_acceleration_table()
 
 
 # endregion
@@ -264,7 +291,6 @@ async def insert_battery(payload):
                 INSERT INTO battery (timestamp, left_battery_voltage, right_battery_voltage, central_battery_voltage)
                 VALUES ($1, $2, $3, $4)
             """, timestamp, payload['left_battery_voltage'], payload['right_battery_voltage'], payload['central_battery_voltage'])
-            logger.info("Inserted battery payload")
     except Exception as e:
         logger.error("Failed to insert battery payload")
         raise
@@ -279,7 +305,6 @@ async def insert_mission(payload):
                 INSERT INTO mission (timestamp, description)
                 VALUES ($1, $2)
             """, timestamp, payload['description'])
-            logger.info("Inserted mission payload")
     except Exception as e:
         logger.error("Failed to insert mission payload")
         raise
@@ -294,7 +319,6 @@ async def insert_mode(payload):
                 INSERT INTO mode (timestamp, mode)
                 VALUES ($1, $2)
             """, timestamp, payload['mode'])
-            logger.info("Inserted mode payload")
     except Exception as e:
         logger.error("Failed to insert mode payload")
         raise
@@ -309,7 +333,6 @@ async def insert_obstacle(payload):
                 INSERT INTO obstacle (timestamp, latitude, longitude, distance)
                 VALUES ($1, $2, $3, $4)
             """, timestamp, payload['latitude'], payload['longitude'], payload['distance'])
-            logger.info("Inserted obstacle payload")
     except Exception as e:
         logger.error("Failed to insert obstacle payload")
         raise
@@ -324,7 +347,6 @@ async def insert_position(payload):
                 INSERT INTO position (timestamp, latitude, longitude, velocity, heading)
                 VALUES ($1, $2, $3, $4, $5)
             """, timestamp, payload['latitude'], payload['longitude'], payload['velocity'], payload['heading'])
-            logger.info("Inserted position payload")
     except Exception as e:
         logger.error("Failed to insert position payload")
         raise
@@ -339,9 +361,22 @@ async def insert_thrusters_input(payload):
                 INSERT INTO thrusters_input (timestamp, left_thruster, right_thruster)
                 VALUES ($1, $2, $3)
             """, timestamp, payload['left_thruster'], payload['right_thruster'])
-            logger.info("Inserted thrusters_input payload")
     except Exception as e:
         logger.error("Failed to insert thrusters_input payload")
+        raise
+
+
+async def insert_acceleration(payload):
+    try:
+        pool = await get_postgres()
+        async with pool.acquire() as conn:
+            timestamp = datetime.fromisoformat(payload['timestamp'])
+            await conn.execute("""
+                INSERT INTO acceleration (timestamp, acceleration)
+                VALUES ($1, $2)
+            """, timestamp, payload['acceleration'])
+    except Exception as e:
+        logger.error("Failed to insert acceleration payload")
         raise
 
 

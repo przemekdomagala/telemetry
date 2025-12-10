@@ -5,7 +5,7 @@ function Navbar() {
   return (
     <nav className="navbar">
       <div className="navbar-brand">
-        <h1>Barka Telemetry</h1>
+        <h1>Autonomous Boat Telemetry</h1>
       </div>
       <ul className="nav-links">
         <li>
