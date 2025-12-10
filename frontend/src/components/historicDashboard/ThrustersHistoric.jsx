@@ -87,10 +87,11 @@ export default function ThrustersHistoric({ selectedStart, selectedEnd }) {
         }
 
         // Draw thruster lines
+        const maxGapMs = 5000; 
+        
         const drawLine = (dataKey, color, label) => {
             ctx.strokeStyle = color;
             ctx.lineWidth = 2;
-            ctx.beginPath();
 
             filteredData.forEach((point, index) => {
                 const timestamp = new Date(point.timestamp).getTime();
@@ -100,12 +101,25 @@ export default function ThrustersHistoric({ selectedStart, selectedEnd }) {
                 const y = height - 60 - ((value - yAxisMin) / valueRange) * (height - 80);
 
                 if (index === 0) {
+                    ctx.beginPath();
                     ctx.moveTo(x, y);
                 } else {
-                    ctx.lineTo(x, y);
+                    const prevTimestamp = new Date(filteredData[index - 1].timestamp).getTime();
+                    const timeDiff = timestamp - prevTimestamp;
+                    
+                    if (timeDiff > maxGapMs) {
+                        ctx.stroke();
+                        ctx.beginPath();
+                        ctx.moveTo(x, y);
+                    } else {
+                        ctx.lineTo(x, y);
+                    }
+                }
+                
+                if (index === filteredData.length - 1) {
+                    ctx.stroke();
                 }
             });
-            ctx.stroke();
         };
 
         drawLine('left_thruster', '#ff0000', 'Left');

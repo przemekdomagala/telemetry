@@ -4,7 +4,7 @@ import BatteriesHistoric from "./BatteriesHistoric";
 import MapHistoric from "./MapHistoric";
 import BoatModeHistoric from './BoatModeHistorix';
 import ThrustersHistoric from './ThrustersHistoric';
-import ClosestObstacleHistoric from './ClosestObstacleHistoric';
+import AccelerationHistoric from './AccelerationHistoric';
 import useApi from '../../hooks/useApi';
 import '../../css/Dashboard.css';
 
@@ -110,17 +110,21 @@ function HistoricData() {
     const endDateStr = formatDateInput(selectedEnd);
     const allOptions = generateTimeOptions();
 
+    let options = allOptions;
+    
+    // Filter by start time if on the same day (end must be after start)
     if (startDateStr === endDateStr) {
       const startTime = formatTimeInput(selectedStart);
-      return allOptions.filter(time => time > startTime);
+      options = options.filter(time => time > startTime);
     }
     
+    // Filter by data range max if on the newest day
     if (dataRange && endDateStr === formatDateInput(dataRange.newest)) {
         const maxTime = formatTimeInput(dataRange.newest);
-        return allOptions.filter(time => time <= maxTime);
+        options = options.filter(time => time <= maxTime);
     }
 
-    return allOptions;
+    return options;
   };
 
   const handleStartDateChange = (e) => {
@@ -139,7 +143,7 @@ function HistoricData() {
       setSelectedStart(finalStart);
       
       if (finalStart >= selectedEnd) {
-         setSelectedEnd(Math.min(finalStart + (60*60*1000), dataRange.newest));
+         setSelectedEnd(Math.min(finalStart + (5 * 60 * 1000), dataRange.newest));
       }
     }
   };
@@ -151,12 +155,11 @@ function HistoricData() {
     const [year, month, day] = dateStr.split('-');
     
     const newStart = Date.UTC(year, month - 1, day, hours, minutes);
-    
-    console.log('Start time selected:', timeStr, 'Timestamp:', newStart, 'Date:', new Date(newStart).toISOString());
 
     if (!isNaN(newStart) && newStart >= dataRange.oldest && newStart <= dataRange.newest) {
       setSelectedStart(newStart);
       
+      // Ensure end is after start (not equal)
       if (newStart >= selectedEnd) {
         const newEndCandidate = newStart + (5 * 60 * 1000); 
         setSelectedEnd(Math.min(newEndCandidate, dataRange.newest));
@@ -173,8 +176,14 @@ function HistoricData() {
     
     let newEnd = Date.UTC(year, month - 1, day, hours, minutes);
     
+    // Clamp to data range
     if (newEnd > dataRange.newest) newEnd = dataRange.newest;
-    if (newEnd <= selectedStart) newEnd = selectedStart + (5*60*1000); 
+    if (newEnd < dataRange.oldest) newEnd = dataRange.oldest;
+    
+    // Ensure end is after start (not equal)
+    if (newEnd <= selectedStart) {
+      newEnd = Math.min(selectedStart + (5*60*1000), dataRange.newest);
+    }
     
     setSelectedEnd(newEnd);
   };
@@ -193,21 +202,12 @@ function HistoricData() {
   };
 
   const setTimeWindow = (minutes) => {
-    if (!dataRange) return;
+    if (!dataRange || !selectedEnd) return;
     const windowMs = minutes * 60 * 1000;
-    const newEnd = dataRange.newest;
-    const newStart = Math.max(dataRange.oldest, newEnd - windowMs);
     
-    const roundToFiveMinutes = (timestamp) => {
-      const date = new Date(timestamp);
-      const mins = date.getUTCMinutes();
-      const roundedMinutes = Math.floor(mins / 5) * 5;
-      date.setUTCMinutes(roundedMinutes, 0, 0);
-      return date.getTime();
-    };
+    const newStart = selectedEnd - windowMs;
     
-    setSelectedStart(roundToFiveMinutes(newStart));
-    setSelectedEnd(roundToFiveMinutes(newEnd));
+    setSelectedStart(Math.max(newStart, dataRange.oldest));
   };
 
   return (
@@ -224,10 +224,6 @@ function HistoricData() {
               <button onClick={() => setTimeWindow(60)} className="time-window-btn">Last 1h</button>
               <button onClick={() => setTimeWindow(6 * 60)} className="time-window-btn">Last 6h</button>
               <button onClick={() => setTimeWindow(24 * 60)} className="time-window-btn">Last 24h</button>
-              <button onClick={() => {
-                  setSelectedStart(dataRange.oldest);
-                  setSelectedEnd(dataRange.newest);
-              }} className="time-window-btn">Full Range</button>
             </div>
             
             <div className="time-range-info">
@@ -285,7 +281,7 @@ function HistoricData() {
             </div>
           </div>
 
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '20px', marginBottom: '20px' }}>
+          <div className="historic-grid">
             <BoatVelocityHistoric 
               selectedStart={selectedStart} 
               selectedEnd={selectedEnd} 
@@ -300,15 +296,13 @@ function HistoricData() {
               selectedStart={selectedStart}
               selectedEnd={selectedEnd}
             />
-          </div>
 
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '20px', marginBottom: '20px' }}>
             <ThrustersHistoric
               selectedStart={selectedStart}
               selectedEnd={selectedEnd}
             />
 
-            <ClosestObstacleHistoric
+            <AccelerationHistoric
               selectedStart={selectedStart}
               selectedEnd={selectedEnd}
             />

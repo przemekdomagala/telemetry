@@ -29,7 +29,7 @@ function BoatVelocityHistoric({ selectedStart, selectedEnd }) {
         handleResize();
         window.addEventListener('resize', handleResize);
         return () => window.removeEventListener('resize', handleResize);
-    }, [canvasRef]);
+    }, []);
 
     useCanvasPlot(canvasRef, filteredData, {
         selectedStart,
@@ -57,7 +57,7 @@ function BoatVelocityHistoric({ selectedStart, selectedEnd }) {
             )}
             {!isLoading && !error && filteredData && filteredData.length > 0 && (
                 <div className="chart-info">
-                    <canvas ref={canvasRef} width={800} height={400} className="historic-canvas"></canvas>
+                    <canvas ref={canvasRef} width={canvasSize.width} height={canvasSize.height} className="historic-canvas"></canvas>
                 </div>
             )}
             {!isLoading && !error && allData && allData.length > 0 && filteredData.length === 0 && (

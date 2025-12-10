@@ -707,6 +707,26 @@
   height: auto;
 }
 
+.historic-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 350px), 1fr));
+  gap: 20px;
+  margin-bottom: 20px;
+  width: 100%;
+}
+
+@media (min-width: 1024px) {
+  .historic-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+@media (min-width: 768px) and (max-width: 1023px) {
+  .historic-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
 @media (max-width: 767px) {
   .stats {
     flex-direction: column;
