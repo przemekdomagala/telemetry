@@ -69,6 +69,10 @@ async def websocket_obstacle_endpoint(websocket: WebSocket):
 async def websocket_position_endpoint(websocket: WebSocket):
     await websocket_endpoint(websocket, websocket_managers["position"])
 
+@app.websocket("/ws/velocity")
+async def websocket_velocity_endpoint(websocket: WebSocket):
+    await websocket_endpoint(websocket, websocket_managers["velocity"])
+
 @app.websocket("/ws/signaling")
 async def signaling_server_websocket_endpoint(websocket: WebSocket):
     """

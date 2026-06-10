@@ -70,7 +70,6 @@ const useCanvasPlot = (canvasRef, data, config = {}) => {
                 hour: '2-digit', 
                 minute: '2-digit',
                 hour12: false,
-                timeZone: 'UTC'
             });
             ctx.fillText(timeStr, x, height - 35);
         }

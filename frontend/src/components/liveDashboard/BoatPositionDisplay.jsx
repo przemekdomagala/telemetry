@@ -1,35 +1,43 @@
+
 import { useState, useCallback } from 'react';
 import useWebSocket from '../../hooks/useWebSocket';
 
-const WS_URL = `${import.meta.env.VITE_WS_URL}/position`;
+const POSITION_WS_URL = `${import.meta.env.VITE_WS_URL}/position`;
+const VELOCITY_WS_URL = `${import.meta.env.VITE_WS_URL}/velocity`;
+
 
 function BoatPositionDisplay() {
   const [latitude, setLatitude] = useState(null);
   const [longitude, setLongitude] = useState(null);
-  const [velocity, setVelocity] = useState(null);
   const [heading, setHeading] = useState(null);
   const [timestamp, setTimestamp] = useState(null);
-  const [hasData, setHasData] = useState(false);
+  const [hasPosition, setHasPosition] = useState(false);
 
-  const onWebSocketMessage = useCallback((data) => {
-    setHasData(true);
+  const [velocity, setVelocity] = useState(null);
+  const [velocityTimestamp, setVelocityTimestamp] = useState(null);
+  const [hasVelocity, setHasVelocity] = useState(false);
+
+  const onPositionMessage = useCallback((data) => {
+    setHasPosition(true);
     setLatitude(data.latitude);
     setLongitude(data.longitude);
     setHeading(data.heading);
-    setVelocity(data.velocity);
     setTimestamp(data.timestamp);
   }, []);
 
-  useWebSocket(WS_URL, onWebSocketMessage);
+  const onVelocityMessage = useCallback((data) => {
+    setHasVelocity(true);
+    setVelocity(data.velocity);
+    setVelocityTimestamp(data.timestamp);
+  }, []);
 
-  const lastUpdatedTime = timestamp
-    ? new Date(timestamp).toLocaleTimeString()
-    : 'N/A';
+  useWebSocket(POSITION_WS_URL, onPositionMessage);
+  useWebSocket(VELOCITY_WS_URL, onVelocityMessage);
 
-  if (!hasData) {
+  if (!hasPosition && !hasVelocity) {
     return (
       <div className="container">
-        <h4>Boat position data</h4>
+        <h4>Boat position & velocity</h4>
         <p>No data available</p>
       </div>
     );
@@ -37,20 +45,19 @@ function BoatPositionDisplay() {
 
   return (
     <div className="container">
-      <h4>Boat position data</h4>
-
+      <h4>Boat position & velocity</h4>
       <p style={{ fontSize: '18px', fontWeight: 'bold', margin: '10px 0' }}>
         {latitude !== null
           ? `Lat: ${latitude.toFixed(6)}°`
-          : 'Lat: ---°'}<br></br>
+          : 'Lat: ---°'}<br />
         {longitude !== null
           ? `Lon: ${longitude.toFixed(6)}°`
-          : 'Lon: ---°'}<br></br>
-        {heading !== null ? `Heading: ${heading.toFixed(1)}°` : 'Heading: ---°'}<br></br>
-        {velocity !== null ? ` Velocity: ${velocity.toFixed(1)} m/s` : '---'}
+          : 'Lon: ---°'}<br />
+        {heading !== null ? `Heading: ${heading.toFixed(1)}°` : 'Heading: ---°'}<br />
+        {hasVelocity && velocity !== null
+          ? `Velocity: ${velocity.toFixed(1)} m/s`
+          : 'Velocity: ---'}
       </p>
-
-      <p>Last updated: {lastUpdatedTime}</p>
     </div>
   );
 }

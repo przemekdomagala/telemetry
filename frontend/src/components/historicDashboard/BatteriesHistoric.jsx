@@ -37,15 +37,12 @@ function BatteriesHistoric({ selectedStart, selectedEnd }) {
         const width = canvasSize.width;
         const height = canvasSize.height;
 
-        // Set canvas dimensions
         canvas.width = width;
         canvas.height = height;
 
-        // Clear canvas
         ctx.fillStyle = '#0a0a0a';
         ctx.fillRect(0, 0, width, height);
 
-        // Extract voltage values
         const allVoltages = filteredData.flatMap(p => [
             p.left_battery_voltage,
             p.right_battery_voltage,
@@ -59,7 +56,6 @@ function BatteriesHistoric({ selectedStart, selectedEnd }) {
         const yAxisMax = maxVoltage + padding;
         const valueRange = yAxisMax - yAxisMin;
 
-        // Draw grid and Y-axis labels
         ctx.strokeStyle = '#2a2a2a';
         ctx.lineWidth = 0.5;
         const yAxisStep = 1;
@@ -76,7 +72,6 @@ function BatteriesHistoric({ selectedStart, selectedEnd }) {
             ctx.fillText(`${i.toFixed(1)} V`, 55, y + 4);
         }
 
-        // Draw X-axis time labels
         ctx.fillStyle = '#aaa';
         ctx.font = '11px sans-serif';
         ctx.textAlign = 'center';
@@ -87,16 +82,14 @@ function BatteriesHistoric({ selectedStart, selectedEnd }) {
             const time = selectedStart + (duration / numLabels) * i;
             const x = 60 + ((width - 80) / numLabels) * i;
             const date = new Date(time);
-            const timeStr = date.toLocaleTimeString('en-US', { 
+            const timeStr = date.toLocaleTimeString(undefined, { 
                 hour: '2-digit', 
                 minute: '2-digit',
-                hour12: false,
-                timeZone: 'UTC'
+                hour12: false
             });
             ctx.fillText(timeStr, x, height - 35);
         }
 
-        // Draw battery voltage lines
         const maxGapMs = 5000; 
         
         const drawLine = (dataKey, color, label) => {
@@ -136,7 +129,6 @@ function BatteriesHistoric({ selectedStart, selectedEnd }) {
         drawLine('right_battery_voltage', '#00ff00', 'Right');
         drawLine('central_battery_voltage', '#ffff00', 'Central');
 
-        // Draw legend
         const legendData = [
             { color: '#ff0000', label: 'Left' },
             { color: '#00ff00', label: 'Right' },
@@ -166,7 +158,10 @@ function BatteriesHistoric({ selectedStart, selectedEnd }) {
         <div className="historic-card">
             <h2 className="historic-title">Battery Voltages Over Time</h2>
             {isLoading && <div className="loading-message">Loading battery data...</div>}
-            {error && <div className="error-message">Error loading data: {error}</div>}
+            {error && error === 'NO_DATA' && <div className="empty-message">No battery data available for this time range.</div>}
+            {error && error === 'SERVER_ERROR' && <div className="error-message">Server error. Please try again later.</div>}
+            {error && error === 'NETWORK_ERROR' && <div className="error-message">Network error. Please check your connection.</div>}
+            {error && error === 'REQUEST_ERROR' && <div className="error-message">Request error. Please try again.</div>}
             {!isLoading && !error && allData && allData.length === 0 && (
                 <div className="empty-message">No historic battery data found.</div>
             )}

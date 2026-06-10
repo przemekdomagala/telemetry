@@ -45,7 +45,7 @@ mission_manager = WebSocketManager("mission")
 mode_manager = WebSocketManager("mode")
 obstacle_manager = WebSocketManager("obstacle")
 position_manager = WebSocketManager("position")
-
+velocity_manager = WebSocketManager("velocity")
 
 websocket_managers = {
     "battery": battery_manager,
@@ -53,4 +53,5 @@ websocket_managers = {
     "mode": mode_manager,
     "obstacle": obstacle_manager,
     "position": position_manager,
+    "velocity": velocity_manager,
 }

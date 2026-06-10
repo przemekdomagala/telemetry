@@ -6,15 +6,44 @@ import BoatModeHistoric from './BoatModeHistorix';
 import ThrustersHistoric from './ThrustersHistoric';
 import AccelerationHistoric from './AccelerationHistoric';
 import useApi from '../../hooks/useApi';
-import '../../css/Dashboard.css';
+import { exportAllData } from '../../utils/csvExport';
+import '../../css/styles.css';
 
 const TIME_URL = `${import.meta.env.VITE_API_URL}/data-time-range`;
+const POSITION_URL = `${import.meta.env.VITE_API_URL}/position`;
+const BATTERY_URL = `${import.meta.env.VITE_API_URL}/battery`;
+const MODE_URL = `${import.meta.env.VITE_API_URL}/mode`;
+const THRUSTERS_URL = `${import.meta.env.VITE_API_URL}/thrusters_input`;
+const ACCELERATION_URL = `${import.meta.env.VITE_API_URL}/acceleration`;
+const OBSTACLE_URL = `${import.meta.env.VITE_API_URL}/obstacle`;
 
 function HistoricData() {
   const { data: timeRangeData, isLoading, error } = useApi(TIME_URL);
   const [dataRange, setDataRange] = useState(null);
   const [selectedStart, setSelectedStart] = useState(null);
   const [selectedEnd, setSelectedEnd] = useState(null);
+  const [isExporting, setIsExporting] = useState(false);
+
+  const buildApiUrl = (baseUrl, start, end) => {
+    if (!start || !end) return null;
+    const startDate = new Date(start).toISOString();
+    const endDate = new Date(end).toISOString();
+    return `${baseUrl}?start_ts=${startDate}&end_ts=${endDate}&limit=50000`;
+  };
+
+  const positionUrl = buildApiUrl(POSITION_URL, selectedStart, selectedEnd);
+  const batteryUrl = buildApiUrl(BATTERY_URL, selectedStart, selectedEnd);
+  const modeUrl = buildApiUrl(MODE_URL, selectedStart, selectedEnd);
+  const thrustersUrl = buildApiUrl(THRUSTERS_URL, selectedStart, selectedEnd);
+  const accelerationUrl = buildApiUrl(ACCELERATION_URL, selectedStart, selectedEnd);
+  const obstacleUrl = buildApiUrl(OBSTACLE_URL, selectedStart, selectedEnd);
+
+  const { data: positionData } = useApi(positionUrl || '', { dependencies: [selectedStart, selectedEnd] });
+  const { data: batteryData } = useApi(batteryUrl || '', { dependencies: [selectedStart, selectedEnd] });
+  const { data: modeData } = useApi(modeUrl || '', { dependencies: [selectedStart, selectedEnd] });
+  const { data: thrustersData } = useApi(thrustersUrl || '', { dependencies: [selectedStart, selectedEnd] });
+  const { data: accelerationData } = useApi(accelerationUrl || '', { dependencies: [selectedStart, selectedEnd] });
+  const { data: obstacleData } = useApi(obstacleUrl || '', { dependencies: [selectedStart, selectedEnd] });
 
   useEffect(() => {
     if (timeRangeData && timeRangeData.start_time && timeRangeData.end_time) {
@@ -38,6 +67,23 @@ function HistoricData() {
     }
   }, [timeRangeData]);
 
+  const handleExportData = () => {
+    setIsExporting(true);
+    
+    const allData = {
+      position: positionData,
+      battery: batteryData,
+      mode: modeData,
+      thrusters: thrustersData,
+      acceleration: accelerationData,
+      obstacle: obstacleData
+    };
+
+    exportAllData(allData, selectedStart, selectedEnd);
+    
+    setTimeout(() => setIsExporting(false), 1000);
+  };
+
   const formatDateTime = (timestamp) => {
     if (!timestamp) return '...';
     const date = new Date(timestamp);
@@ -46,25 +92,24 @@ function HistoricData() {
       day: 'numeric', 
       hour: '2-digit', 
       minute: '2-digit',
-      hour12: false,
-      timeZone: 'UTC'
-    }) + ' UTC';
+      hour12: false
+    });
   };
 
   const formatDateInput = (timestamp) => {
     if (!timestamp) return '';
     const date = new Date(timestamp);
-    const year = date.getUTCFullYear();
-    const month = String(date.getUTCMonth() + 1).padStart(2, '0');
-    const day = String(date.getUTCDate()).padStart(2, '0');
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
     return `${year}-${month}-${day}`;
   };
 
   const formatTimeInput = (timestamp) => {
     if (!timestamp) return '00:00';
     const date = new Date(timestamp);
-    const hours = String(date.getUTCHours()).padStart(2, '0');
-    const minutes = String(date.getUTCMinutes()).padStart(2, '0');
+    const hours = String(date.getHours()).padStart(2, '0');
+    const minutes = String(date.getMinutes()).padStart(2, '0');
     return `${hours}:${minutes}`;
   };
 
@@ -80,7 +125,6 @@ function HistoricData() {
     return options;
   };
 
-  // Filter Start Options based on Data Limits
   const getStartTimeOptions = () => {
     if (!dataRange || !selectedStart) return [];
     
@@ -112,13 +156,11 @@ function HistoricData() {
 
     let options = allOptions;
     
-    // Filter by start time if on the same day (end must be after start)
     if (startDateStr === endDateStr) {
       const startTime = formatTimeInput(selectedStart);
       options = options.filter(time => time > startTime);
     }
     
-    // Filter by data range max if on the newest day
     if (dataRange && endDateStr === formatDateInput(dataRange.newest)) {
         const maxTime = formatTimeInput(dataRange.newest);
         options = options.filter(time => time <= maxTime);
@@ -132,19 +174,13 @@ function HistoricData() {
     const timeStr = formatTimeInput(selectedStart);
     const [hours, minutes] = timeStr.split(':');
     const [year, month, day] = dateStr.split('-');
-    
-    const newStart = Date.UTC(year, month - 1, day, hours, minutes);
-    
-    if (!isNaN(newStart)) {
-      let finalStart = newStart;
-      if (finalStart < dataRange.oldest) finalStart = dataRange.oldest;
-      if (finalStart > dataRange.newest) finalStart = dataRange.newest;
-      
-      setSelectedStart(finalStart);
-      
-      if (finalStart >= selectedEnd) {
-         setSelectedEnd(Math.min(finalStart + (5 * 60 * 1000), dataRange.newest));
-      }
+    const localDate = new Date(year, month - 1, day, hours, minutes);
+    let finalStart = localDate.getTime();
+    if (finalStart < dataRange.oldest) finalStart = dataRange.oldest;
+    if (finalStart > dataRange.newest) finalStart = dataRange.newest;
+    setSelectedStart(finalStart);
+    if (finalStart >= selectedEnd) {
+      setSelectedEnd(Math.min(finalStart + (5 * 60 * 1000), dataRange.newest));
     }
   };
 
@@ -153,13 +189,10 @@ function HistoricData() {
     const dateStr = formatDateInput(selectedStart);
     const [hours, minutes] = timeStr.split(':');
     const [year, month, day] = dateStr.split('-');
-    
-    const newStart = Date.UTC(year, month - 1, day, hours, minutes);
-
-    if (!isNaN(newStart) && newStart >= dataRange.oldest && newStart <= dataRange.newest) {
+    const localDate = new Date(year, month - 1, day, hours, minutes);
+    const newStart = localDate.getTime();
+    if (newStart >= dataRange.oldest && newStart <= dataRange.newest) {
       setSelectedStart(newStart);
-      
-      // Ensure end is after start (not equal)
       if (newStart >= selectedEnd) {
         const newEndCandidate = newStart + (5 * 60 * 1000); 
         setSelectedEnd(Math.min(newEndCandidate, dataRange.newest));
@@ -170,21 +203,15 @@ function HistoricData() {
   const handleEndDateChange = (e) => {
     const dateStr = e.target.value;
     const [year, month, day] = dateStr.split('-');
-    
     const timeStr = formatTimeInput(selectedEnd);
     const [hours, minutes] = timeStr.split(':');
-    
-    let newEnd = Date.UTC(year, month - 1, day, hours, minutes);
-    
-    // Clamp to data range
+    const localDate = new Date(year, month - 1, day, hours, minutes);
+    let newEnd = localDate.getTime();
     if (newEnd > dataRange.newest) newEnd = dataRange.newest;
     if (newEnd < dataRange.oldest) newEnd = dataRange.oldest;
-    
-    // Ensure end is after start (not equal)
     if (newEnd <= selectedStart) {
       newEnd = Math.min(selectedStart + (5*60*1000), dataRange.newest);
     }
-    
     setSelectedEnd(newEnd);
   };
 
@@ -193,11 +220,10 @@ function HistoricData() {
     const dateStr = formatDateInput(selectedEnd);
     const [hours, minutes] = timeStr.split(':');
     const [year, month, day] = dateStr.split('-');
-    
-    const newEnd = Date.UTC(year, month - 1, day, hours, minutes);
-    
-    if (!isNaN(newEnd) && newEnd > selectedStart && newEnd <= dataRange.newest) {
-        setSelectedEnd(newEnd);
+    const localDate = new Date(year, month - 1, day, hours, minutes);
+    const newEnd = localDate.getTime();
+    if (newEnd > selectedStart && newEnd <= dataRange.newest) {
+      setSelectedEnd(newEnd);
     }
   };
 
@@ -224,6 +250,13 @@ function HistoricData() {
               <button onClick={() => setTimeWindow(60)} className="time-window-btn">Last 1h</button>
               <button onClick={() => setTimeWindow(6 * 60)} className="time-window-btn">Last 6h</button>
               <button onClick={() => setTimeWindow(24 * 60)} className="time-window-btn">Last 24h</button>
+              <button 
+                onClick={handleExportData} 
+                className="time-window-btn export-btn"
+                disabled={isExporting}
+              >
+                {isExporting ? 'Exporting...' : 'Export to CSV'}
+              </button>
             </div>
             
             <div className="time-range-info">

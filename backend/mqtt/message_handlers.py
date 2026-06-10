@@ -1,5 +1,5 @@
 from utils.logger import get_logger
-from database.postgres import insert_battery, insert_mission, insert_mode, insert_obstacle, insert_position, insert_thrusters_input, insert_acceleration
+from database.insert_data import insert_battery, insert_mission, insert_mode, insert_obstacle, insert_position, insert_thrusters_input, insert_acceleration, insert_velocity
 from websocket_manager.websocket_manager import websocket_managers
 from models.battery_model import BatteryPayload
 from models.mission_model import MissionPayload
@@ -8,7 +8,7 @@ from models.obstacle_model import ObstaclePayload
 from models.position_model import PositionPayload
 from models.thrusters_input_model import ThrustersInputPayload
 from models.acceleration_model import AccelerationPayload
-from database.postgres import insert_acceleration
+from models.velocity_model import VelocityPayload
 
 logger = get_logger()
 
@@ -39,6 +39,10 @@ async def thrusters_input_message_handler(payload: ThrustersInputPayload):
 async def acceleration_message_handler(payload: AccelerationPayload):
     await insert_acceleration(payload)
 
+async def velocity_message_handler(payload: VelocityPayload):
+    await insert_velocity(payload)
+    await websocket_managers["velocity"].broadcast(payload)
+
 handlers = { 
     "/boat/battery": battery_message_handler,
     "/boat/mission": mission_message_handler,
@@ -47,4 +51,5 @@ handlers = {
     "/boat/position": position_message_handler,
     "/boat/thrusters_input": thrusters_input_message_handler,
     "/boat/acceleration": acceleration_message_handler,
+    "/boat/velocity": velocity_message_handler,
 }

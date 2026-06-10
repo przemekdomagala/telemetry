@@ -2,13 +2,13 @@ import { useEffect, useRef, useState } from 'react';
 import useHistoricData from '../../hooks/useHistoricData';
 import useCanvasPlot from '../../hooks/useCanvasPlot';
 
-const API_URL = `${import.meta.env.VITE_API_URL}/position`;
+const VELOCITY_URL = `${import.meta.env.VITE_API_URL}/velocity`;
 
 function BoatVelocityHistoric({ selectedStart, selectedEnd }) {
     const canvasRef = useRef(null);
     
     const { filteredData, isLoading, error, data: allData } = useHistoricData(
-        API_URL,
+        VELOCITY_URL,
         selectedStart,
         selectedEnd,
         point => point.velocity
@@ -37,7 +37,7 @@ function BoatVelocityHistoric({ selectedStart, selectedEnd }) {
         yAxisLabel: 'Velocity',
         yAxisUnit: 'm/s',
         yAxisMin: 0,
-        yAxisMax: null, // Auto-calculate
+        yAxisMax: null, 
         yAxisStep: 2,
         lineColor: '#ffff00',
         pointColor: '#ffff00',
@@ -51,7 +51,10 @@ function BoatVelocityHistoric({ selectedStart, selectedEnd }) {
         <div className="historic-card">
             <h2 className="historic-title">Boat Velocity Over Time</h2>
             {isLoading && <div className="loading-message">Loading boat velocity data...</div>}
-            {error && <div className="error-message">Error loading data: {error}</div>}
+            {error && error === 'NO_DATA' && <div className="empty-message">No velocity data available for this time range.</div>}
+            {error && error === 'SERVER_ERROR' && <div className="error-message">Server error. Please try again later.</div>}
+            {error && error === 'NETWORK_ERROR' && <div className="error-message">Network error. Please check your connection.</div>}
+            {error && error === 'REQUEST_ERROR' && <div className="error-message">Request error. Please try again.</div>}
             {!isLoading && !error && allData && allData.length === 0 && (
                 <div className="empty-message">No historic velocity data found.</div>
             )}
