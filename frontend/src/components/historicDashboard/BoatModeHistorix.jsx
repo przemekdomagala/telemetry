@@ -37,22 +37,18 @@ export default function BoatModeHistoric({ selectedStart, selectedEnd }) {
         const width = canvasSize.width;
         const height = canvasSize.height;
 
-        // Set canvas dimensions
         canvas.width = width;
         canvas.height = height;
 
-        // Clear canvas
         ctx.fillStyle = '#0a0a0a';
         ctx.fillRect(0, 0, width, height);
 
-        // Mode colors
         const modeColors = {
-            'MANUAL': '#ffff00',  // Yellow
-            'AUTO': '#00ff00',     // Green
-            'OFF': '#ff0000'       // Red
+            'MANUAL': '#ffff00',  
+            'AUTO': '#00ff00',    
+            'OFF': '#ff0000'      
         };
 
-        // Draw grid and Y-axis labels
         ctx.strokeStyle = '#2a2a2a';
         ctx.lineWidth = 0.5;
         const modes = ['MANUAL', 'AUTO', 'OFF'];
@@ -71,7 +67,6 @@ export default function BoatModeHistoric({ selectedStart, selectedEnd }) {
             ctx.fillText(mode, 55, y + 4);
         });
 
-        // Draw X-axis time labels
         ctx.fillStyle = '#aaa';
         ctx.font = '11px sans-serif';
         ctx.textAlign = 'center';
@@ -82,20 +77,18 @@ export default function BoatModeHistoric({ selectedStart, selectedEnd }) {
             const time = selectedStart + (duration / numLabels) * i;
             const x = 60 + ((width - 80) / numLabels) * i;
             const date = new Date(time);
-            const timeStr = date.toLocaleTimeString('en-US', { 
+            const timeStr = date.toLocaleTimeString(undefined, { 
                 hour: '2-digit', 
                 minute: '2-digit',
-                hour12: false,
-                timeZone: 'UTC'
+                hour12: false
             });
             ctx.fillText(timeStr, x, height - 35);
         }
 
-        // Draw mode segments with colors
         ctx.lineWidth = 3;
         
         filteredData.forEach((point, index) => {
-            if (index === filteredData.length - 1) return; // Skip last point
+            if (index === filteredData.length - 1) return; 
             
             const timestamp = new Date(point.timestamp).getTime();
             const nextTimestamp = new Date(filteredData[index + 1].timestamp).getTime();
@@ -112,14 +105,13 @@ export default function BoatModeHistoric({ selectedStart, selectedEnd }) {
             ctx.lineTo(x2, y);
             ctx.stroke();
 
-            // Draw circle at transition point
+            
             ctx.fillStyle = modeColors[mode] || '#ffffff';
             ctx.beginPath();
             ctx.arc(x1, y, 3, 0, Math.PI * 2);
             ctx.fill();
         });
 
-        // Draw last point
         if (filteredData.length > 0) {
             const lastPoint = filteredData[filteredData.length - 1];
             const timestamp = new Date(lastPoint.timestamp).getTime();
@@ -135,7 +127,6 @@ export default function BoatModeHistoric({ selectedStart, selectedEnd }) {
             ctx.fill();
         }
 
-        // Draw legend
         const legendData = [
             { color: '#ffff00', label: 'MANUAL' },
             { color: '#00ff00', label: 'AUTO' },
@@ -165,7 +156,10 @@ export default function BoatModeHistoric({ selectedStart, selectedEnd }) {
         <div className="historic-card">
             <h2 className="historic-title">Boat Mode Over Time</h2>
             {isLoading && <div className="loading-message">Loading boat mode data...</div>}
-            {error && <div className="error-message">Error loading data: {error}</div>}
+            {error && error === 'NO_DATA' && <div className="empty-message">No boat mode data available for this time range.</div>}
+            {error && error === 'SERVER_ERROR' && <div className="error-message">Server error. Please try again later.</div>}
+            {error && error === 'NETWORK_ERROR' && <div className="error-message">Network error. Please check your connection.</div>}
+            {error && error === 'REQUEST_ERROR' && <div className="error-message">Request error. Please try again.</div>}
             {!isLoading && !error && allData && allData.length === 0 && (
                 <div className="empty-message">No historic boat mode data found.</div>
             )}

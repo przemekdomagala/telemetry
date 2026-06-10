@@ -17,14 +17,27 @@ const useApi = (url, options = {}) => {
             try {
                 const response = await fetch(url);
                 if (!response.ok) {
-                    throw new Error(`HTTP error! status: ${response.status}`);
+                    // Handle different HTTP error codes with user-friendly messages
+                    if (response.status === 404) {
+                        throw new Error('NO_DATA');
+                    } else if (response.status === 400) {
+                        throw new Error('NO_DATA');
+                    } else if (response.status >= 500) {
+                        throw new Error('SERVER_ERROR');
+                    } else {
+                        throw new Error('REQUEST_ERROR');
+                    }
                 }
                 const result = await response.json();
                 const finalData = transform ? transform(result) : result;
                 setData(finalData);
                 setError(null);
             } catch (err) {
-                setError(err.message);
+                if (err.message === 'NO_DATA' || err.message === 'SERVER_ERROR' || err.message === 'REQUEST_ERROR') {
+                    setError(err.message);
+                } else {
+                    setError('NETWORK_ERROR');
+                }
             } finally {
                 setIsLoading(false);
             }

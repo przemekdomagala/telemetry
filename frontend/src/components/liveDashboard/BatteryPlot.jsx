@@ -89,19 +89,16 @@ function BatteryPlot() {
             startTime = now - TIME_WINDOW;
         }
 
-        // Dynamic margins based on canvas size
         const marginLeft = width > 600 ? 60 : 40;
         const marginRight = width > 600 ? 20 : 10;
         const marginBottom = 60;
         const marginTop = 20;
 
-        // Voltage range
         const allVoltages = batteryData.flatMap(d => [d.left, d.right, d.central]);
         const minVoltage = Math.floor(Math.min(...allVoltages));
         const maxVoltage = Math.ceil(Math.max(...allVoltages));
         const voltageRange = maxVoltage - minVoltage || 1;
 
-        // Grid lines
         ctx.strokeStyle = '#2a2a2a';
         ctx.lineWidth = 0.5;
         const voltageStep = 1;
@@ -118,7 +115,6 @@ function BatteryPlot() {
             ctx.fillText(`${v.toFixed(1)}V`, marginLeft - 5, y + 4);
         }
 
-        // Time labels 
         ctx.fillStyle = '#aaa';
         ctx.font = `${width > 600 ? 11 : 9}px sans-serif`;
         ctx.textAlign = 'center';
@@ -136,7 +132,6 @@ function BatteryPlot() {
             ctx.fillText(timeStr, x, height - 35);
         }
 
-        // Data lines
         const drawLine = (key, color) => {
             ctx.strokeStyle = color;
             ctx.lineWidth = 2;

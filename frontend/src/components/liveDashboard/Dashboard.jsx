@@ -4,7 +4,7 @@ import MapDisplay from './MapDisplay';
 import BatteryPlot from './BatteryPlot';
 import MissionDescriptionDisplay from './MissionDescriptionDisplay';
 import StatusDisplay from './StatusDisplay';
-import '../../css/Dashboard.css';
+import '../../css/styles.css';
 
 function Dashboard() {
   return (

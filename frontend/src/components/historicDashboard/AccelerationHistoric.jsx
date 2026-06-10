@@ -36,8 +36,8 @@ export default function AccelerationHistoric({ selectedStart, selectedEnd }) {
         selectedEnd,
         yAxisLabel: 'Acceleration',
         yAxisUnit: 'm/s²',
-        yAxisMin: -5,
-        yAxisMax: 5,
+        yAxisMin: 0,
+        yAxisMax: null,
         yAxisStep: 2,
         lineColor: '#00bcd4',
         pointColor: '#00bcd4',
@@ -52,7 +52,10 @@ export default function AccelerationHistoric({ selectedStart, selectedEnd }) {
         <div className="historic-card">
             <h2 className="historic-title">Acceleration Over Time</h2>
             {isLoading && <div className="loading-message">Loading acceleration data...</div>}
-            {error && <div className="error-message">Error loading data: {error}</div>}
+            {error && error === 'NO_DATA' && <div className="empty-message">No acceleration data available for this time range.</div>}
+            {error && error === 'SERVER_ERROR' && <div className="error-message">Server error. Please try again later.</div>}
+            {error && error === 'NETWORK_ERROR' && <div className="error-message">Network error. Please check your connection.</div>}
+            {error && error === 'REQUEST_ERROR' && <div className="error-message">Request error. Please try again.</div>}
             {!isLoading && !error && allData && allData.length === 0 && (
                 <div className="empty-message">No historic acceleration data found.</div>
             )}

@@ -37,11 +37,9 @@ export default function ThrustersHistoric({ selectedStart, selectedEnd }) {
         const width = canvasSize.width;
         const height = canvasSize.height;
 
-        // Set canvas dimensions
         canvas.width = width;
         canvas.height = height;
 
-        // Clear canvas
         ctx.fillStyle = '#0a0a0a';
         ctx.fillRect(0, 0, width, height);
 
@@ -49,7 +47,6 @@ export default function ThrustersHistoric({ selectedStart, selectedEnd }) {
         const yAxisMax = 100;
         const valueRange = yAxisMax - yAxisMin;
 
-        // Draw grid and Y-axis labels
         ctx.strokeStyle = '#2a2a2a';
         ctx.lineWidth = 0.5;
         const yAxisStep = 20;
@@ -66,7 +63,6 @@ export default function ThrustersHistoric({ selectedStart, selectedEnd }) {
             ctx.fillText(`${i} %`, 55, y + 4);
         }
 
-        // Draw X-axis time labels
         ctx.fillStyle = '#aaa';
         ctx.font = '11px sans-serif';
         ctx.textAlign = 'center';
@@ -77,16 +73,14 @@ export default function ThrustersHistoric({ selectedStart, selectedEnd }) {
             const time = selectedStart + (duration / numLabels) * i;
             const x = 60 + ((width - 80) / numLabels) * i;
             const date = new Date(time);
-            const timeStr = date.toLocaleTimeString('en-US', { 
+            const timeStr = date.toLocaleTimeString(undefined, { 
                 hour: '2-digit', 
                 minute: '2-digit',
-                hour12: false,
-                timeZone: 'UTC'
+                hour12: false
             });
             ctx.fillText(timeStr, x, height - 35);
         }
 
-        // Draw thruster lines
         const maxGapMs = 5000; 
         
         const drawLine = (dataKey, color, label) => {
@@ -125,7 +119,6 @@ export default function ThrustersHistoric({ selectedStart, selectedEnd }) {
         drawLine('left_thruster', '#ff0000', 'Left');
         drawLine('right_thruster', '#00ff00', 'Right');
 
-        // Draw legend
         const legendData = [
             { color: '#ff0000', label: 'Left Thruster' },
             { color: '#00ff00', label: 'Right Thruster' }
@@ -154,7 +147,10 @@ export default function ThrustersHistoric({ selectedStart, selectedEnd }) {
         <div className="historic-card">
             <h2 className="historic-title">Thrusters Input Over Time</h2>
             {isLoading && <div className="loading-message">Loading thrusters input data...</div>}
-            {error && <div className="error-message">Error loading data: {error}</div>}
+            {error && error === 'NO_DATA' && <div className="empty-message">No thrusters input data available for this time range.</div>}
+            {error && error === 'SERVER_ERROR' && <div className="error-message">Server error. Please try again later.</div>}
+            {error && error === 'NETWORK_ERROR' && <div className="error-message">Network error. Please check your connection.</div>}
+            {error && error === 'REQUEST_ERROR' && <div className="error-message">Request error. Please try again.</div>}
             {!isLoading && !error && allData && allData.length === 0 && (
                 <div className="empty-message">No historic thrusters input data found.</div>
             )}

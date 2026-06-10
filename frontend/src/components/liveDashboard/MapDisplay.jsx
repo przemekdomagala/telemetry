@@ -57,7 +57,7 @@ export default function MapDisplay() {
 
     useWebSocket(WS_URL, onWebSocketMessage);
 
-    const boatCenter = boatLatitude && boatLongitude ? [boatLatitude, boatLongitude] : [50.0328, 19.9905]; // default to Bagry lake
+    const boatCenter = boatLatitude && boatLongitude ? [boatLatitude, boatLongitude] : [50.0328, 19.9905]; 
 
     return(
         <div className="map-display">

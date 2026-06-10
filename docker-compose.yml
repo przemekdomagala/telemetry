@@ -34,12 +34,25 @@ services:
       MQTT_USE_TLS: ${MQTT_USE_TLS:-true}
       FRONTEND_URL: ${FRONTEND_URL}
       FRONTEND_LOCAL_URL: ${FRONTEND_LOCAL_URL}
-      DATABASE_URL: postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@telemetry-db:5432/${POSTGRES_DB}
+      DATABASE_URL: postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@db:5432/${POSTGRES_DB}
     ports:
       - "8000:8000"
     networks:
       - app-network
     command: uvicorn main:app --host 0.0.0.0 --reload
+
+  frontend:
+    build: ./frontend
+    container_name: telemetry-frontend
+    restart: unless-stopped
+    ports:
+      - "5173:5173"
+    environment:
+      VITE_API_URL: ${VITE_API_URL}
+      VITE_WS_URL: ${VITE_WS_URL}
+    networks:
+      - app-network
+    command: npm run dev -- --host 0.0.0.0
 
 volumes:
   pgdata:

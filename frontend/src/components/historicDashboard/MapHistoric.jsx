@@ -19,31 +19,27 @@ function MapHistoric({ selectedStart, selectedEnd }) {
         selectedEnd
     );
 
-    // Convert position data to trail coordinates
     const trail = useMemo(() => {
         if (!positionData || positionData.length === 0) return [];
         return positionData.map(point => [point.latitude, point.longitude]);
     }, [positionData]);
 
-    // Convert obstacle data to coordinates
     const obstacles = useMemo(() => {
         if (!obstacleData || obstacleData.length === 0) return [];
         return obstacleData.map(point => [point.latitude, point.longitude]);
     }, [obstacleData]);
 
-    // Get last boat position (most recent in time range)
     const lastPosition = useMemo(() => {
         if (!positionData || positionData.length === 0) return null;
         const last = positionData[positionData.length - 1];
         return [last.latitude, last.longitude];
     }, [positionData]);
 
-    // Use last position as map center
     const mapCenter = useMemo(() => {
         if (lastPosition) {
             return lastPosition;
         }
-        return [50.0328, 19.9905]; // Default to Bagry lake
+        return [50.0328, 19.9905]; 
     }, [lastPosition]);
 
     const isLoading = positionLoading || obstacleLoading;
@@ -53,7 +49,10 @@ function MapHistoric({ selectedStart, selectedEnd }) {
         <div className="historic-card">
             <h2 className="historic-title">Boat Trail and Obstacles Map</h2>
             {isLoading && <div className="loading-message">Loading map data...</div>}
-            {error && <div className="error-message">Error loading data: {error}</div>}
+            {error && error === 'NO_DATA' && <div className="empty-message">No map data available for this time range.</div>}
+            {error && error === 'SERVER_ERROR' && <div className="error-message">Server error. Please try again later.</div>}
+            {error && error === 'NETWORK_ERROR' && <div className="error-message">Network error. Please check your connection.</div>}
+            {error && error === 'REQUEST_ERROR' && <div className="error-message">Request error. Please try again.</div>}
             {!isLoading && !error && positionData && positionData.length === 0 && (
                 <div className="empty-message">No position data found for this time range.</div>
             )}
@@ -69,7 +68,6 @@ function MapHistoric({ selectedStart, selectedEnd }) {
                             attribution="&copy; OpenStreetMap contributors"
                         />
                         
-                        {/* Boat trail */}
                         {trail.length > 1 && (
                             <Polyline
                                 positions={trail}
@@ -79,7 +77,6 @@ function MapHistoric({ selectedStart, selectedEnd }) {
                             />
                         )}
                         
-                        {/* Last boat position marker */}
                         {lastPosition && (
                             <CircleMarker
                                 center={lastPosition}
@@ -97,7 +94,6 @@ function MapHistoric({ selectedStart, selectedEnd }) {
                             </CircleMarker>
                         )}
                         
-                        {/* Obstacle markers */}
                         {obstacles.map((obstacle, index) => (
                             <CircleMarker
                                 key={`obstacle-${index}`}

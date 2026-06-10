@@ -767,3 +767,19 @@
     flex: 1 1 calc(50% - 6px);
   }
 }
+
+.export-btn {
+  background-color: #28a745 !important;
+  color: white !important;
+  font-weight: 600;
+}
+
+.export-btn:hover:not(:disabled) {
+  background-color: #218838 !important;
+  border-color: #1e7e34 !important;
+}
+
+.export-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
